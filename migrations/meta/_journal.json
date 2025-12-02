@@ -1,0 +1,20 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1749239636887,
+      "tag": "0000_add_country_code_field",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1749553563644,
+      "tag": "0001_adorable_firedrake",
+      "breakpoints": true
+    }
+  ]
+}
