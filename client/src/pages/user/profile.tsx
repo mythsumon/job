@@ -322,7 +322,7 @@ export default function UserProfile() {
                         onValueChange={setActiveTab}
                         className="space-y-6"
                     >
-                        <TabsList className="grid w-full grid-cols-4 bg-white shadow-sm rounded-lg p-1">
+                        <TabsList className={`grid w-full ${user?.userType === "candidate" ? "grid-cols-5" : "grid-cols-4"} bg-white shadow-sm rounded-lg p-1`}>
                             <TabsTrigger
                                 value="resumes"
                                 className="flex items-center gap-2"
@@ -330,6 +330,15 @@ export default function UserProfile() {
                                 <FileText className="w-4 h-4" />
                                 이력서
                             </TabsTrigger>
+                            {user?.userType === "candidate" && (
+                                <TabsTrigger
+                                    value="applications"
+                                    className="flex items-center gap-2"
+                                >
+                                    <Briefcase className="w-4 h-4" />
+                                    지원현황
+                                </TabsTrigger>
+                            )}
                             <TabsTrigger
                                 value="subscription"
                                 className="flex items-center gap-2"
@@ -1116,6 +1125,26 @@ export default function UserProfile() {
                                         <ResumeManagement />
                                     </ErrorBoundary>
                                 </TabsContent>
+                                
+                                {/* Applications Tab - Only for candidates */}
+                                {user?.userType === "candidate" && (
+                                    <TabsContent value="applications">
+                                        <div className="p-6">
+                                            <div className="mb-6">
+                                                <h3 className="text-lg font-semibold mb-2">지원 현황</h3>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    지원하신 채용공고의 진행 상황을 확인하실 수 있습니다.
+                                                </p>
+                                            </div>
+                                            <Link href="/user/applications">
+                                                <Button className="w-full">
+                                                    지원 현황 전체보기
+                                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                    </TabsContent>
+                                )}
                             </div>
                         )}
                     </Tabs>

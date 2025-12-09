@@ -11,13 +11,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, apiGet } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
+import { ApplyDialog } from "@/components/jobs/apply-dialog";
 import type { JobWithCompany } from "@shared/schema";
 
 export default function JobDetail() {
   const { id } = useParams();
+  const jobId = parseInt(id || "0");
   const { toast } = useToast();
-  const [isSaved, setIsSaved] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+  const [applyDialogOpen, setApplyDialogOpen] = useState(false);
 
   const { data: job, isLoading, error } = useQuery<JobWithCompany>({
     queryKey: [`/api/jobs/${id}`],
@@ -29,53 +33,67 @@ export default function JobDetail() {
     enabled: !!job?.companyId,
   });
 
+  // Check if job is saved
+  const { data: savedJobs } = useQuery({
+    queryKey: ["/api/saved-jobs", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      try {
+        return await apiGet<any[]>(`/api/saved-jobs?userId=${user.id}`);
+      } catch {
+        return [];
+      }
+    },
+    enabled: isAuthenticated && !!user?.id,
+  });
+
+  // Check if user already applied
+  const { data: existingApplication } = useQuery({
+    queryKey: ["/api/applications/user", user?.id, jobId],
+    queryFn: async () => {
+      if (!user?.id || !id) return null;
+      try {
+        const applications = await apiGet<any[]>(`/api/applications/user/${user.id}`);
+        return applications.find((app: any) => app.jobId === parseInt(id));
+      } catch {
+        return null;
+      }
+    },
+    enabled: isAuthenticated && !!user?.id && !!id,
+  });
+
+  const isJobSaved = savedJobs?.some((sj: any) => sj.jobId === parseInt(id || "0"));
+  const hasApplied = !!existingApplication;
+
   const saveJobMutation = useMutation({
     mutationFn: async () => {
-      if (isSaved) {
-        // In a real app, would use actual user ID
-        await apiRequest("DELETE", `/api/saved-jobs/1/${id}`);
+      if (!user?.id) {
+        toast({
+          title: "로그인 필요",
+          description: "로그인 후 이용해주세요.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (isJobSaved) {
+        await apiRequest("DELETE", `/api/saved-jobs/${user.id}/${id}`);
       } else {
         await apiRequest("POST", "/api/saved-jobs", {
-          userId: 1, // In a real app, would use actual user ID
+          userId: user.id,
           jobId: parseInt(id!),
         });
       }
     },
     onSuccess: () => {
-      setIsSaved(!isSaved);
+      queryClient.invalidateQueries({ queryKey: ["/api/saved-jobs", user?.id] });
       toast({
-        title: isSaved ? "채용공고 저장 취소" : "채용공고 저장 완료",
-        description: isSaved ? "관심 목록에서 제거되었습니다." : "관심 목록에 추가되었습니다.",
+        title: isJobSaved ? "채용공고 저장 취소" : "채용공고 저장 완료",
+        description: isJobSaved ? "관심 목록에서 제거되었습니다." : "관심 목록에 추가되었습니다.",
       });
     },
     onError: () => {
       toast({
         title: "오류 발생",
-        description: "잠시 후 다시 시도해주세요.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const applyMutation = useMutation({
-    mutationFn: async () => {
-      await apiRequest("POST", "/api/applications", {
-        userId: 1, // In a real app, would use actual user ID
-        jobId: parseInt(id!),
-        coverLetter: "지원서를 제출합니다.",
-        status: "pending",
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "지원 완료",
-        description: "성공적으로 지원하였습니다.",
-      });
-      queryClient.invalidateQueries({ queryKey: [`/api/jobs/${id}`] });
-    },
-    onError: () => {
-      toast({
-        title: "지원 실패",
         description: "잠시 후 다시 시도해주세요.",
         variant: "destructive",
       });
@@ -408,31 +426,67 @@ export default function JobDetail() {
             {/* Apply Section */}
             <Card className={`sticky top-4 ${tierStyling.cardClass}`}>
               <CardContent className="p-6">
-                <Button 
-                  onClick={() => applyMutation.mutate()}
-                  disabled={applyMutation.isPending}
-                  className={`w-full mb-3 transition-all duration-300 ${
-                    isPremium 
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl' 
-                      : isPro 
-                      ? 'bg-gradient-to-r from-slate-600 to-zinc-600 hover:from-slate-700 hover:to-zinc-700 text-white border-0 shadow-md hover:shadow-lg'
-                      : ''
-                  }`}
-                  size="lg"
-                >
-                  {isPremium && <Sparkles className="w-4 h-4 mr-2" />}
-                  {isPro && !isPremium && <TrendingUp className="w-4 h-4 mr-2" />}
-                  {applyMutation.isPending ? "지원 중..." : "지원하기"}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => saveJobMutation.mutate()}
-                  disabled={saveJobMutation.isPending}
-                  className="w-full mb-3"
-                >
-                  <Heart className={`mr-2 h-4 w-4 ${isSaved ? 'fill-current text-red-500' : ''}`} />
-                  {isSaved ? "저장됨" : "관심등록"}
-                </Button>
+                {hasApplied ? (
+                  <Button 
+                    disabled
+                    className="w-full mb-3 bg-green-600 hover:bg-green-600 text-white"
+                    size="lg"
+                  >
+                    ✓ 지원 완료
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        toast({
+                          title: "로그인 필요",
+                          description: "로그인 후 지원하실 수 있습니다.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      setApplyDialogOpen(true);
+                    }}
+                    className={`w-full mb-3 transition-all duration-300 ${
+                      isPremium 
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl' 
+                        : isPro 
+                        ? 'bg-gradient-to-r from-slate-600 to-zinc-600 hover:from-slate-700 hover:to-zinc-700 text-white border-0 shadow-md hover:shadow-lg'
+                        : ''
+                    }`}
+                    size="lg"
+                  >
+                    {isPremium && <Sparkles className="w-4 h-4 mr-2" />}
+                    {isPro && !isPremium && <TrendingUp className="w-4 h-4 mr-2" />}
+                    지원하기
+                  </Button>
+                )}
+                {isAuthenticated ? (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => saveJobMutation.mutate()}
+                    disabled={saveJobMutation.isPending}
+                    className="w-full mb-3"
+                  >
+                    <Heart className={`mr-2 h-4 w-4 ${isJobSaved ? 'fill-current text-red-500' : ''}`} />
+                    {isJobSaved ? "저장됨" : "관심등록"}
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      toast({
+                        title: "로그인 필요",
+                        description: "로그인 후 저장하실 수 있습니다.",
+                        variant: "destructive",
+                      });
+                    }}
+                    className="w-full mb-3"
+                  >
+                    <Heart className="mr-2 h-4 w-4" />
+                    관심등록
+                  </Button>
+                )}
                 <Button variant="outline" className="w-full">
                   <Share2 className="mr-2 h-4 w-4" />
                   공유하기
@@ -524,6 +578,19 @@ export default function JobDetail() {
       </main>
 
       <Footer />
+      
+      {/* Apply Dialog */}
+      {job && (
+        <ApplyDialog
+          jobId={jobId}
+          jobTitle={job.title}
+          open={applyDialogOpen}
+          onOpenChange={setApplyDialogOpen}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["/api/applications/user", user?.id] });
+          }}
+        />
+      )}
     </div>
   );
 }

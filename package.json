@@ -4,18 +4,11 @@
     "type": "module",
     "license": "MIT",
     "scripts": {
-        "dev": "concurrently \"npm run server\" \"npm run client\"",
-        "server": "cross-env NODE_ENV=development tsx -r dotenv/config server/index.ts",
+        "dev": "vite --host 0.0.0.0",
         "client": "vite --host 0.0.0.0",
         "build": "npx --yes vite@5.4.14 build",
         "vercel-build": "npx --yes vite@5.4.14 build",
-        "start": "cross-env NODE_ENV=production node dist/index.js",
-        "check": "tsc",
-        "db:push": "drizzle-kit push",
-        "db:update": "tsx scripts/update-db-schema.ts",
-        "db:migrate": "drizzle-kit generate && drizzle-kit migrate",
-        "db:studio": "drizzle-kit studio",
-        "seed:jobs": "tsx scripts/seedJobs.ts"
+        "check": "tsc"
     },
     "dependencies": {
         "@anthropic-ai/sdk": "^0.37.0",

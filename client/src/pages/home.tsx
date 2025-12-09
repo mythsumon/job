@@ -16,6 +16,9 @@ import { useDisableRightClick } from "@/hooks/useDisableRightClick";
 import type { JobWithCompany, Company } from "@shared/schema";
 import type { JobFilters, Stats } from "@/lib/types";
 import { useState, useEffect } from "react";
+import { CareerSection } from "@/components/career/career-section";
+import { FeedSection } from "@/components/feed/feed-section";
+import { apiGet } from "@/lib/queryClient";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -26,42 +29,60 @@ export default function Home() {
   // Apply security measures
   useDisableRightClick();
 
-  // No auto-redirect - allow all users to access home page
+  // Auto-redirect authenticated users to their dashboard
+  useEffect(() => {
+    // Don't redirect if user is not authenticated or still loading
+    if (isLoading) return;
+    if (!isAuthenticated || !user) return;
+    
+    const userType = user.userType || user.user_type;
+    const currentPath = window.location.pathname;
+    
+    // Only redirect if on root path or /user/home
+    if (currentPath === "/" || currentPath === "/user/home") {
+      // Small delay to prevent redirect during logout
+      const timer = setTimeout(() => {
+        // Double check authentication state before redirecting
+        const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+        const userData = localStorage.getItem('user_data');
+        
+        if (!token || !userData) {
+          // User logged out, don't redirect
+          return;
+        }
+        
+        if (userType === "employer") {
+          console.log('[HOME] Redirecting employer to /company/dashboard');
+          setLocation("/company/dashboard");
+        } else if (userType === "admin" || user.role === "admin") {
+          console.log('[HOME] Redirecting admin to /admin/dashboard');
+          setLocation("/admin/dashboard");
+        }
+        // candidate stays on home page
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [user, isAuthenticated, isLoading, setLocation]);
 
   const { data: featuredJobs, isLoading: featuredLoading } = useQuery<JobWithCompany[]>({
     queryKey: ["/api/jobs/featured"],
-    queryFn: async () => {
-      const response = await fetch("/api/jobs/featured");
-      if (!response.ok) throw new Error("Failed to fetch featured jobs");
-      return response.json();
-    },
+    queryFn: () => apiGet<JobWithCompany[]>("/api/jobs/featured"),
   });
 
   const { data: proJobs, isLoading: proJobsLoading } = useQuery<JobWithCompany[]>({
     queryKey: ["/api/jobs/pro"],
-    queryFn: async () => {
-      const response = await fetch("/api/jobs/pro");
-      if (!response.ok) throw new Error("Failed to fetch pro jobs");
-      return response.json();
-    },
+    queryFn: () => apiGet<JobWithCompany[]>("/api/jobs/pro"),
   });
 
   const { data: companies, isLoading: companiesLoading } = useQuery<Company[]>({
     queryKey: ["/api/companies"],
-    queryFn: async () => {
-      const response = await fetch("/api/companies");
-      if (!response.ok) throw new Error("Failed to fetch companies");
-      return response.json();
-    },
+    queryFn: () => apiGet<Company[]>("/api/companies"),
   });
 
   const { data: stats } = useQuery<Stats>({
     queryKey: ["/api/stats"],
-    queryFn: async () => {
-      const response = await fetch("/api/stats");
-      if (!response.ok) throw new Error("Failed to fetch stats");
-      return response.json();
-    },
+    queryFn: () => apiGet<Stats>("/api/stats"),
   });
 
   const [displayedJobsCount, setDisplayedJobsCount] = useState(8);
@@ -69,11 +90,7 @@ export default function Home() {
 
   const { data: allRecentJobs, isLoading: recentLoading } = useQuery<JobWithCompany[]>({
     queryKey: ["/api/jobs"],
-    queryFn: async () => {
-      const response = await fetch("/api/jobs");
-      if (!response.ok) throw new Error("Failed to fetch jobs");
-      return response.json();
-    },
+    queryFn: () => apiGet<JobWithCompany[]>("/api/jobs"),
   });
 
   const displayedRecentJobs = allRecentJobs?.slice(0, displayedJobsCount);
@@ -88,14 +105,14 @@ export default function Home() {
   };
 
   const handleSearch = () => {
-    // This would trigger navigation to jobs page with filters
+    // Navigate to jobs page with filters
     const searchParams = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== "") {
         searchParams.set(key, value.toString());
       }
     });
-    window.location.href = `/jobs?${searchParams.toString()}`;
+    setLocation(`/user/jobs?${searchParams.toString()}`);
   };
 
   return (
@@ -120,14 +137,18 @@ export default function Home() {
               {t('home.hero.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4 sm:px-0">
-              <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg">
-                <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                {t('home.hero.browsJobs')}
-              </Button>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg">
-                {t('home.hero.companyServices')}
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
-              </Button>
+              <Link href="/user/jobs">
+                <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg">
+                  <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  {t('home.hero.browsJobs')}
+                </Button>
+              </Link>
+              <Link href="/user/companies">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg">
+                  {t('home.hero.companyServices')}
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -209,7 +230,7 @@ export default function Home() {
                     <p className="text-sm sm:text-base lg:text-lg text-amber-800 dark:text-amber-200 font-medium">{t('home.sections.featured.subtitle')}</p>
                   </div>
                 </div>
-                <Link href="/jobs?isFeatured=true">
+                <Link href="/user/jobs?isFeatured=true">
                   <Button className="group relative w-full sm:w-auto bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 hover:from-amber-600 hover:via-yellow-600 hover:to-orange-600 text-white px-6 py-3 text-base font-semibold shadow-xl shadow-amber-500/25 hover:shadow-2xl hover:shadow-amber-500/40 transition-all duration-300 transform hover:scale-105 border border-amber-300/30">
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <span className="relative flex items-center">
@@ -288,7 +309,7 @@ export default function Home() {
                     <p className="text-sm sm:text-base lg:text-lg text-indigo-800 dark:text-indigo-200 font-medium">{t('home.sections.pro.subtitle')}</p>
                   </div>
                 </div>
-                <Link href="/jobs?isPro=true">
+                <Link href="/user/jobs?isPro=true">
                   <Button className="group relative w-full sm:w-auto bg-gradient-to-r from-indigo-500 via-purple-500 to-violet-500 hover:from-indigo-600 hover:via-purple-600 hover:to-violet-600 text-white px-6 py-3 text-base font-semibold shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-300 transform hover:scale-105 border border-indigo-300/25">
                     <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-transparent rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <span className="relative flex items-center">
@@ -352,7 +373,7 @@ export default function Home() {
               </div>
               <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-300">{t('home.sections.recent.subtitle')}</p>
             </div>
-            <Link href="/jobs">
+            <Link href="/user/jobs">
               <Button className="group relative w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 text-base font-semibold shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 transform hover:scale-105 border border-blue-300/25">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-transparent rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <span className="relative flex items-center">
@@ -494,7 +515,7 @@ export default function Home() {
           )}
           
             <div className="text-center mt-8 sm:mt-10 lg:mt-12">
-              <Link href="/companies">
+              <Link href="/user/companies">
                 <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-lg">
                   {t('home.sections.companies.viewAll')}
                   <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
@@ -553,17 +574,44 @@ export default function Home() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
-              <Button size="lg" className="w-full sm:w-auto bg-white text-blue-600 hover:bg-blue-50 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold">
-                <Briefcase className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
-                {t('home.cta.buttons.jobSeeker')}
-              </Button>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-blue-600 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg">
-                {t('home.cta.buttons.employer')}
-                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
-              </Button>
+              <Link href="/user/jobs">
+                <Button size="lg" className="w-full sm:w-auto bg-white text-blue-600 hover:bg-blue-50 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold">
+                  <Briefcase className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
+                  {t('home.cta.buttons.jobSeeker')}
+                </Button>
+              </Link>
+              {isAuthenticated && user?.userType === 'employer' ? (
+                <Link href="/company/dashboard">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-blue-600 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg">
+                    {t('home.cta.buttons.employer')}
+                    <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/register?type=employer">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-blue-600 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg">
+                    {t('home.cta.buttons.employer')}
+                    <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </section>
+
+        {/* Career & Community Section - Only for authenticated users */}
+        {isAuthenticated && user && (
+          <section className="mb-12 sm:mb-16 lg:mb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white dark:bg-card rounded-2xl shadow-lg border border-border/50 p-6">
+                <CareerSection compact={true} showHeader={false} />
+              </div>
+              <div className="bg-white dark:bg-card rounded-2xl shadow-lg border border-border/50 p-6">
+                <FeedSection compact={true} showCreatePost={false} />
+              </div>
+            </div>
+          </section>
+        )}
       </main>
 
       <Footer />

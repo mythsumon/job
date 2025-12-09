@@ -35,8 +35,10 @@ export function useAuth() {
       console.log('[AUTH] Token exists:', !!token);
       console.log('[AUTH] Token valid:', AuthManager.isTokenValid());
       
-      // Check token validity before making request
-      if (!AuthManager.isTokenValid()) {
+      // MOCK MODE: Skip token validation
+      const MOCK_MODE = true;
+      
+      if (!MOCK_MODE && !AuthManager.isTokenValid()) {
         console.log('[AUTH] Token invalid, clearing auth');
         AuthManager.clearAuth();
         return null;
@@ -83,7 +85,7 @@ export function useAuth() {
     },
     retry: false,
     staleTime: 5 * 60 * 1000,
-    enabled: !!token,
+    enabled: true, // Always enabled in mock mode
   });
 
   // Check localStorage on mount for immediate user state
@@ -114,8 +116,12 @@ export function useAuth() {
   const logout = async () => {
     await AuthManager.logout();
     queryClient.setQueryData(["/api/auth/user"], null);
-    queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-    window.location.href = "/";
+    queryClient.invalidateQueries();
+    queryClient.clear(); // Clear all query cache
+    // Small delay to ensure state is cleared before redirect
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 100);
   };
 
   return {

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
+import { apiGet } from "@/lib/queryClient";
 
 export function useUnreadMessages() {
   const { user, isAuthenticated } = useAuth();
@@ -8,19 +9,19 @@ export function useUnreadMessages() {
     queryKey: ["/api/chat/unread-count", user?.id],
     queryFn: async () => {
       if (!user?.id) return 0;
-      const token = localStorage.getItem('auth_token');
-      if (!token) return 0;
       
-      const res = await fetch(`/api/chat/unread-count?userId=${user.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-      if (!res.ok) return 0;
-      const data = await res.json();
-      return data.count || 0;
+      try {
+        // Use apiGet to support mock mode
+        const data = await apiGet<number | { count: number }>(`/api/chat/unread-count?userId=${user.id}`);
+        // Handle both number and object responses
+        if (typeof data === 'number') {
+          return data;
+        }
+        return data?.count || 0;
+      } catch (error) {
+        console.error('[useUnreadMessages] Error fetching unread count:', error);
+        return 0;
+      }
     },
     enabled: isAuthenticated && !!user?.id,
     refetchInterval: 30000, // Check every 30 seconds

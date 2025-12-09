@@ -1,9 +1,8 @@
-import { Link, useLocation } from "wouter";
+﻿import { Link, useLocation } from "wouter";
 import { Briefcase, Building2, Users, BookOpen, Heart, MessageCircle, User, Settings, LogOut, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
-
 import { useAuth } from "@/hooks/useAuth";
 import { MobileNav } from "@/components/mobile/mobile-nav";
 import { LanguageSelector } from "@/components/common/language-selector";
@@ -15,51 +14,30 @@ import type { Company } from "@shared/schema";
 export default function Header() {
   const [location] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { unreadCount, hasUnread } = useUnreadMessages();
-  
-  // Debug user data
-  console.log('[Header] User data:', user);
-  console.log('[Header] User type:', user?.userType);
-  console.log('[Header] Is authenticated:', isAuthenticated);
-  console.log('Header 렌더링', language);
-  
-  // Apply security measures to all pages
   useDisableRightClick();
-
-  // Fetch company info for employer users
-  const { data: userCompany } = useQuery<Company>({
+  const { data: userCompany } = useQuery({
     queryKey: ['/api/user/primary-company'],
     enabled: isAuthenticated && user?.userType === 'employer',
     retry: false,
   });
-
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;
     if (path !== "/" && location.startsWith(path)) return true;
     return false;
   };
-
   const navigation = [
     { name: t("header.nav.jobs"), href: "/user/jobs", icon: Briefcase },
     { name: t("header.nav.companies"), href: "/user/companies", icon: Building2 },
     { name: t("header.nav.career"), href: "/user/career", icon: BookOpen },
     { name: t("header.nav.community"), href: "/user/feed", icon: Heart },
   ];
-
-  const adminNavigation = [
-    { name: "관리자 대시보드", href: "/admin", icon: Settings },
-    { name: "사용자 관리", href: "/admin/users", icon: Users },
-    { name: "기업 관리", href: "/admin/companies", icon: Building2 },
-    { name: "권한 관리", href: "/admin/roles", icon: Settings },
-  ];
-
   return (
     <header className="bg-white/80 dark:bg-card/80 backdrop-blur-xl border-b border-border/50 sticky top-0 z-50 shadow-lg shadow-black/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 lg:h-20">
-          {/* Logo */}
-          <Link href="/user/home" className="flex items-center group">
+          <Link href={isAuthenticated ? "/user/home" : "/"} className="flex items-center group">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 lg:p-3 rounded-xl group-hover:scale-105 transition-transform duration-200">
               <Briefcase className="text-white h-5 w-5 lg:h-6 lg:w-6" />
             </div>
@@ -67,8 +45,6 @@ export default function Header() {
               WorkMongolia
             </span>
           </Link>
-
-          {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
             {navigation.map((item) => {
               const Icon = item.icon;
@@ -90,8 +66,6 @@ export default function Header() {
               );
             })}
           </nav>
-
-          {/* Desktop User Actions */}
           <div className="hidden lg:flex items-center space-x-4">
             <LanguageSelector />
             {isAuthenticated ? (
@@ -173,7 +147,7 @@ export default function Header() {
                     ) : user?.userType === 'employer' ? (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link href="/company" className="flex items-center">
+                          <Link href="/company/dashboard" className="flex items-center">
                             <Building2 className="mr-2 h-4 w-4" />
                             기업화면
                           </Link>
@@ -183,7 +157,7 @@ export default function Header() {
                     ) : user?.userType === 'admin' ? (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link href="/admin" className="flex items-center">
+                          <Link href="/admin/dashboard" className="flex items-center">
                             <Settings className="mr-2 h-4 w-4" />
                             관리자화면
                           </Link>
@@ -216,8 +190,6 @@ export default function Header() {
               </div>
             )}
           </div>
-
-          {/* Mobile Actions */}
           <div className="lg:hidden flex items-center space-x-2">
             <LanguageSelector />
             <MobileNav />

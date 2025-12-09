@@ -48,7 +48,7 @@ export default function CompanyCard({ company, jobCount = 0 }: CompanyCardProps)
   const isEstablished = company.founded && company.founded < 2015;
 
   return (
-    <Link href={`/companies/${company.id}`}>
+    <Link href={`/user/companies/${company.id}`}>
       <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-card/80 shadow-sm h-full">
         {/* Animated Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

@@ -18,6 +18,8 @@ import {
   PieChart,
   Calendar
 } from "lucide-react";
+import { CareerSection } from "@/components/career/career-section";
+import { FeedSection } from "@/components/feed/feed-section";
 
 export default function AdminDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState("7d");
@@ -277,6 +279,20 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Career & Community Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
+            <CardContent className="p-6">
+              <CareerSection compact={true} showHeader={false} />
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
+            <CardContent className="p-6">
+              <FeedSection compact={true} showCreatePost={true} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </AdminLayout>
   );

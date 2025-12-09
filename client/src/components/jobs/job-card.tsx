@@ -118,7 +118,7 @@ export default function JobCard({
     const logo = generateCompanyLogo(job.company?.name || "Unknown Company");
 
     return (
-        <Link href={`/jobs/${job.id}`}>
+        <Link href={`/user/jobs/${job.id}`}>
             <Card
                 className={`group relative overflow-hidden cursor-pointer transition-all duration-700 ease-out ${
                     className.includes("bg-gradient-to-br from-gray-50") ||

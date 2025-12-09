@@ -438,6 +438,10 @@ export const mn = {
         tooltip: "Хэл солих"
       }
     },
+    search: {
+      placeholder: "Ажлын байр, компани, түлхүүр үг хайх...",
+      pressEnter: "Хайхын тулд Enter дарна уу",
+    },
     selected: "Сонгогдсон"
   },
 
@@ -513,6 +517,9 @@ export const mn = {
     topPerformingJobs: "Шилдэг гүйцэтгэлтэй ажлын байр",
     candidateSourceAnalysis: "Нэр дэвшигчийн эх үүсвэрийн шинжилгээ",
     quickActions: "Түргэн үйлдэл",
+    quickActionsDescription: "Байнга ашигладаг функцэд хурдан хандах",
+    quickLinks: "Түргэн холбоос",
+    quickLinksDescription: "Байнга зочлох хуудас руу хурдан шилжих",
     reviewApplications: "Өргөдөл хянах",
     updateCompanyProfile: "Компанийн профайл шинэчлэх",
     hiringPipeline: "Ажилд авах шугам",
@@ -554,7 +561,41 @@ export const mn = {
     applicationTrendDescription: "Сүүлийн 30 хоногийн өргөдлийн статистик",
     applicants: "Өргөдөл гаргагчид",
     jobPerformanceDescription: "Таны ажлын байруудын гүйцэтгэлийн үзүүлэлт",
-    applicantCount: "Өргөдөл гаргагчдын тоо"
+    applicantCount: "Өргөдөл гаргагчдын тоо",
+    viewAllInterviews: "Бүх ярилцлагын хуваарь харах",
+    activeJobs: "Идэвхтэй ажлын байр",
+    activeJobsDescription: "Одоогийн идэвхтэй ажлын байрны байдал",
+    active: "Идэвхтэй",
+    stageReview: "Баримт бичгийн хяналт",
+    stageInterview: "Ярилцлага",
+    stageOffer: "Санал",
+    stageHired: "Ажилд авсан",
+    pipelineStatus: "Ажилд авах шугамын байдал",
+    pipelineStatusDescription: "Шатлал бүрээр өргөдөл гаргагчдын байдал",
+    viewPipeline: "Шугамын дэлгэрэнгүй харах",
+    performanceGoals: "Гүйцэтгэлийн зорилго",
+    performanceGoalsDescription: "Энэ сарын зорилготой харьцуулсан дэвшил",
+    completed: "Дууссан",
+    goalMonthlyHires: "Сарын ажилд авах зорилго",
+    goalApplicationResponse: "Өргөдөл хариулах хувь",
+    goalInterviewCompletion: "Ярилцлага дуусгах хувь",
+    people: " хүн",
+    priorityTasks: "Урьдчилсан ажил",
+    priorityTasksDescription: "Шууд анхаарах шаардлагатай ажил",
+    taskReviewApplications: "Өргөдөл хянах шаардлагатай",
+    taskReviewApplicationsDesc: "12 шинэ өргөдөл хүлээж байна",
+    taskScheduleInterviews: "Ярилцлага товлох",
+    taskScheduleInterviewsDesc: "3 нэр дэвшигчид ярилцлага товлох шаардлагатай",
+    taskUpdateJobPosting: "Ажлын байр шинэчлэх",
+    taskUpdateJobPostingDesc: "2 ажлын байр удахгүй дуусах гэж байна",
+    dueDate: "Дуусах огноо",
+    recentActivityTimeline: "Сүүлийн үйл ажиллагаа",
+    recentActivityTimelineDescription: "Сүүлийн үеийн гол үйл ажиллагаа",
+    activityNewApplication: "Минсу Ким Фронтэнд хөгжүүлэгчид өргөдөл гаргасан",
+    activityInterviewScheduled: "Жихён Литэй ярилцлага товлогдсон",
+    activityJobPosted: "Шинэ ажлын байр нийтлэгдсэн",
+    activityHired: "Жунхо Парк ажилд авсан",
+    viewAllActivity: "Бүх үйл ажиллагаа харах"
   },
 
   // Home Page

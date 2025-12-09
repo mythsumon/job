@@ -15,6 +15,8 @@ import UserChat from "@/pages/user/chat";
 import UserProfile from "@/pages/user/profile";
 import UserSettings from "@/pages/user/settings";
 import UserResumes from "@/pages/user/resumes";
+import UserApplications from "@/pages/user/applications";
+import SavedJobs from "@/pages/user/saved-jobs";
 import { ProtectedPage } from "@/components/common/ProtectedPage";
 import { AuthGuard } from "@/components/common/AuthGuard";
 import { RoleGuard } from "@/components/common/RoleGuard";
@@ -95,6 +97,16 @@ function Router() {
         <Route path="/user/resumes" component={() => 
           <RoleGuard allowedUserTypes={['candidate']}>
             <ProtectedPage><UserResumes /></ProtectedPage>
+          </RoleGuard>
+        } />
+        <Route path="/user/applications" component={() => 
+          <RoleGuard allowedUserTypes={['candidate']}>
+            <ProtectedPage><UserApplications /></ProtectedPage>
+          </RoleGuard>
+        } />
+        <Route path="/user/saved-jobs" component={() => 
+          <RoleGuard allowedUserTypes={['candidate']}>
+            <ProtectedPage><SavedJobs /></ProtectedPage>
           </RoleGuard>
         } />
         

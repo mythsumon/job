@@ -56,11 +56,6 @@ export default defineConfig({
     server: {
         host: "0.0.0.0", // 모든 네트워크 인터페이스에서 접속 허용
         port: 5173,
-        proxy: {
-            "/api": {
-                target: "http://localhost:5000",
-                changeOrigin: true,
-            },
-        },
+        // 백엔드 없이 UI만 실행 - proxy 제거
     },
 });
