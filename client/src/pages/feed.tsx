@@ -284,7 +284,7 @@ export default function Feed() {
 
   const handleShare = async (postId: number) => {
     try {
-      const url = `${window.location.origin}/user/feed?post=${postId}`;
+      const url = `${window.location.origin}/feed?post=${postId}`;
       if (navigator.share) {
         await navigator.share({
           title: "게시물 공유",

@@ -3,6 +3,8 @@ import { apiGet } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 import {
   Clock,
   CheckCircle,

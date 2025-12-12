@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminLayout from "@/components/admin/admin-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,6 +62,9 @@ export default function AdminCompanyDetail() {
     phone: "",
     role: "member",
   });
+  // TODO: Connect to backend when available
+  // Local UI state for company plan (no API calls)
+  const [companyPlan, setCompanyPlan] = useState<"basic" | "professional" | "enterprise">("basic");
 
   // Fetch company details
   const { data: company, isLoading: isLoadingCompany } = useQuery({
@@ -71,6 +74,16 @@ export default function AdminCompanyDetail() {
     },
     enabled: !!companyId,
   });
+
+  // Initialize company plan from API or default to basic
+  // TODO: Replace with backend plan value when available
+  useEffect(() => {
+    if (company?.plan) {
+      setCompanyPlan(company.plan);
+    } else {
+      setCompanyPlan("basic");
+    }
+  }, [company]);
 
   // Fetch company users
   const { data: companyUsers = [], isLoading: isLoadingUsers } = useQuery({
@@ -380,6 +393,41 @@ export default function AdminCompanyDetail() {
                       </CardContent>
                     </Card>
                   </div>
+
+                  {/* Company Plan Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Company Plan</CardTitle>
+                      <CardDescription>
+                        기업의 플랜을 설정합니다
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <Label htmlFor="company-plan">Company Plan</Label>
+                        <Select
+                          value={companyPlan}
+                          onValueChange={(value: "basic" | "professional" | "enterprise") => {
+                            setCompanyPlan(value);
+                            // TODO: Save plan to backend when API is ready
+                          }}
+                        >
+                          <SelectTrigger id="company-plan" className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="basic">Basic</SelectItem>
+                            <SelectItem value="professional">Professional (Pro)</SelectItem>
+                            <SelectItem value="enterprise">Enterprise (Premium)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-sm text-gray-500 mt-2">
+                          {/* TODO: Replace with backend plan value when available */}
+                          현재 선택된 플랜은 로컬 상태에만 저장됩니다. 백엔드 API 연결 시 자동으로 동기화됩니다.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </CardContent>
             </Card>

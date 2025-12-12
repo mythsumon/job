@@ -67,6 +67,7 @@ export default function AdminJobs() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [companyFilter, setCompanyFilter] = useState("all");
+  const [, setLocation] = useLocation();
   const [statusFilter, setStatusFilter] = useState<"all" | JobStatus>("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [dateRangeFilter, setDateRangeFilter] = useState("all");

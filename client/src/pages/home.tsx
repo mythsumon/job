@@ -42,7 +42,7 @@ export default function Home() {
   // Apply security measures
   useDisableRightClick();
 
-  // Auto-redirect authenticated users to their dashboard
+  // Auto-redirect authenticated users to their dashboard (only if they explicitly visit home)
   useEffect(() => {
     // Don't redirect if user is not authenticated or still loading
     if (isLoading) return;
@@ -51,8 +51,8 @@ export default function Home() {
     const userType = user.userType || user.user_type;
     const currentPath = window.location.pathname;
     
-    // Only redirect if on root path or /user/home
-    if (currentPath === "/" || currentPath === "/user/home") {
+    // Only redirect if on root path (not /user/home to allow guests to view home)
+    if (currentPath === "/") {
       // Small delay to prevent redirect during logout
       const timer = setTimeout(() => {
         // Double check authentication state before redirecting

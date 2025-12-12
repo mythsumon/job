@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   UserCheck,
   Search,
@@ -33,6 +34,8 @@ import {
   Users,
   FileText,
   Calendar,
+  Award,
+  Download,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLocation } from "wouter";
@@ -129,6 +132,7 @@ export default function CompanyRecommendations() {
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [savedTalents, setSavedTalents] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState(""); // For all talents tab
   const [experienceFilter, setExperienceFilter] = useState("all");
   const [sortBy, setSortBy] = useState("match");
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
@@ -136,6 +140,7 @@ export default function CompanyRecommendations() {
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
   const [selectedTalentForSchedule, setSelectedTalentForSchedule] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("recommended"); // "recommended" or "all"
 
   // Fetch AI-recommended jobseekers (candidates) from API
   const { data: jobseekers = [], isLoading: isLoadingJobseekers } = useQuery({

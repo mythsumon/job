@@ -27,22 +27,26 @@ export default function Header() {
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;
     if (path !== "/" && location.startsWith(path)) return true;
+    // Check for /user/ prefix variants (for authenticated users)
+    if (path.startsWith("/") && !path.startsWith("/user/") && location.startsWith("/user" + path)) return true;
+    if (path.startsWith("/user/") && location === path.replace("/user", "")) return true;
     return false;
   };
+  // Use /user/ prefix for authenticated users, public routes for guests
   const navigation = [
-    { name: t("header.nav.jobs"), href: "/user/jobs", icon: Briefcase },
-    { name: t("header.nav.companies"), href: "/user/companies", icon: Building2 },
+    { name: t("header.nav.jobs"), href: isAuthenticated ? "/user/jobs" : "/jobs", icon: Briefcase },
+    { name: t("header.nav.companies"), href: isAuthenticated ? "/user/companies" : "/companies", icon: Building2 },
   ];
 
   const careerNavigation = [
-    { name: t("header.nav.career"), href: "/user/career", icon: BookOpen },
-    { name: t("header.nav.community"), href: "/user/feed", icon: Heart },
+    { name: t("header.nav.career"), href: isAuthenticated ? "/user/career" : "/career", icon: BookOpen },
+    { name: t("header.nav.community"), href: isAuthenticated ? "/user/feed" : "/feed", icon: Heart },
   ];
   return (
     <header className="bg-white/80 dark:bg-card/80 backdrop-blur-xl border-b border-border/50 sticky top-0 z-50 shadow-lg shadow-black/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 lg:h-20">
-          <Link href={isAuthenticated ? "/user/home" : "/"} className="flex items-center group">
+          <Link href="/" className="flex items-center group">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 lg:p-3 rounded-xl group-hover:scale-105 transition-transform duration-200">
               <Briefcase className="text-white h-5 w-5 lg:h-6 lg:w-6" />
             </div>
@@ -53,12 +57,16 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-3 xl:space-x-4">
             {navigation.map((item) => {
               const Icon = item.icon;
+              // Check if active for both public and /user/ routes
+              const isItemActive = isActive(item.href) || 
+                (isAuthenticated && isActive(item.href.replace("/user", ""))) ||
+                (!isAuthenticated && isActive("/user" + item.href));
               return (
                 <Link key={item.name} href={item.href}>
                   <Button
                     variant="ghost"
                     className={`px-4 xl:px-5 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium ${
-                      isActive(item.href)
+                      isItemActive
                         ? "bg-primary/10 text-primary shadow-sm"
                         : "hover:bg-primary/5 hover:text-primary"
                     }`}
@@ -75,7 +83,7 @@ export default function Header() {
                 <Button
                   variant="ghost"
                   className={`px-4 xl:px-5 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium ${
-                    isActive("/user/career") || isActive("/user/feed")
+                    isActive("/career") || isActive("/feed") || isActive("/user/career") || isActive("/user/feed")
                       ? "bg-primary/10 text-primary shadow-sm"
                       : "hover:bg-primary/5 hover:text-primary"
                   }`}
@@ -89,9 +97,13 @@ export default function Header() {
               <DropdownMenuContent align="start" className="w-48">
                 {careerNavigation.map((item) => {
                   const Icon = item.icon;
+                  // Check if active for both public and /user/ routes
+                  const isItemActive = isActive(item.href) || 
+                    (isAuthenticated && isActive(item.href.replace("/user", ""))) ||
+                    (!isAuthenticated && isActive("/user" + item.href));
                   return (
                     <DropdownMenuItem key={item.name} asChild>
-                      <Link href={item.href} className="flex items-center">
+                      <Link href={item.href} className={`flex items-center ${isItemActive ? "bg-primary/10 text-primary" : ""}`}>
                         <Icon className="h-4 w-4 mr-2" />
                         {item.name}
                       </Link>

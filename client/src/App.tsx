@@ -31,15 +31,12 @@ import AdminSettlements from "@/pages/admin/settlements";
 import AdminAnalytics from "@/pages/admin/analytics";
 import AdminSettings from "@/pages/admin/settings";
 import AdminBanners from "@/pages/admin/banners";
-import AdminJobOptions from "@/pages/admin/job-options";
-import AdminChat from "@/pages/admin/chat";
 import AdminCommunity from "@/pages/admin/community";
 import AdminCompanyDetail from "@/pages/admin/company-detail";
-import AdminPreferredIndustries from "@/pages/admin/preferred-industries";
 import AdminCareer from "@/pages/admin/career";
 import AdminJobs from "@/pages/admin/jobs";
-import AdminSkills from "@/pages/admin/skills";
 import AdminReports from "@/pages/admin/reports";
+import AdminRecruitmentMaster from "@/pages/admin/recruitment-master";
 
 import CompanyDashboard from "@/pages/company/dashboard";
 import CompanyApplications from "@/pages/company/applications";
@@ -51,7 +48,6 @@ import CompanyAnalytics from "@/pages/company/analytics";
 import CompanyBranding from "@/pages/company/branding";
 import CompanySettings from "@/pages/company/settings";
 import CompanyEmployees from "@/pages/company/employees";
-import CompanyTalents from "@/pages/company/talents";
 import CompanyChat from "@/pages/company/chat";
 import CompanyProfile from "@/pages/company/profile";
 import CompanyInfo from "@/pages/company/info";
@@ -75,15 +71,13 @@ function AppInitializer() {
   useEffect(() => {
     // Remove old auto-generated mock tokens that were created before the fix
     const token = localStorage.getItem('auth_token');
-    if (token === 'mock-token-123') {
-      // This is an old auto-generated token, check if user actually logged in
+    if (token === 'mock-token-123' || token === 'mock-token-john-doe') {
+      // These are old auto-generated tokens, clear them to allow guest access
       const userData = localStorage.getItem('user_data');
       if (userData) {
         try {
           const user = JSON.parse(userData);
-          // Only keep if it's from a real login (not auto-generated)
-          // Since we can't distinguish, we'll clear it to be safe
-          // User will need to log in again if they want
+          // Clear auto-generated tokens - user must log in properly
           console.log('[APP] Clearing old auto-generated mock token');
           localStorage.removeItem('auth_token');
           localStorage.removeItem('user_data');
@@ -92,6 +86,9 @@ function AppInitializer() {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('user_data');
         }
+      } else {
+        // No user data but token exists, clear token
+        localStorage.removeItem('auth_token');
       }
     }
   }, []);
@@ -124,6 +121,9 @@ function Router() {
         <Route path="/user/companies/:id" component={CompanyDetail} />
         <Route path="/user/career" component={Career} />
         <Route path="/user/feed" component={Feed} />
+        {/* Public routes for guests */}
+        <Route path="/career" component={Career} />
+        <Route path="/feed" component={Feed} />
         
         {/* Protected User Routes - Only authenticated users can access */}
         <Route path="/user/chat" component={() => 
@@ -204,11 +204,8 @@ function Router() {
             <ProtectedPage><CompanyEmployees /></ProtectedPage>
           </RoleGuard>
         } />
-        <Route path="/company/talents" component={() => 
-          <RoleGuard allowedUserTypes={['employer']}>
-            <ProtectedPage><CompanyTalents /></ProtectedPage>
-          </RoleGuard>
-        } />
+        {/* Redirect /company/talents to /company/recommendations */}
+        <Route path="/company/talents" component={() => { window.location.href = "/company/recommendations"; return null; }} />
         <Route path="/company/chat" component={() => 
           <RoleGuard allowedUserTypes={['employer']}>
             <ProtectedPage><CompanyChat /></ProtectedPage>
@@ -301,29 +298,14 @@ function Router() {
             <AdminBanners />
           </RoleGuard>
         } />
-        <Route path="/admin/job-options" component={() => 
+        <Route path="/admin/recruitment-master" component={() => 
           <RoleGuard allowedUserTypes={['admin']}>
-            <AdminJobOptions />
-          </RoleGuard>
-        } />
-        <Route path="/admin/preferred-industries" component={() => 
-          <RoleGuard allowedUserTypes={['admin']}>
-            <AdminPreferredIndustries />
+            <AdminRecruitmentMaster />
           </RoleGuard>
         } />
         <Route path="/admin/career" component={() => 
           <RoleGuard allowedUserTypes={['admin']}>
             <AdminCareer />
-          </RoleGuard>
-        } />
-        <Route path="/admin/skills" component={() => 
-          <RoleGuard allowedUserTypes={['admin']}>
-            <AdminSkills />
-          </RoleGuard>
-        } />
-        <Route path="/admin/chat" component={() => 
-          <RoleGuard allowedUserTypes={['admin']}>
-            <AdminChat />
           </RoleGuard>
         } />
         <Route path="/admin/community" component={() => 
@@ -332,14 +314,13 @@ function Router() {
           </RoleGuard>
         } />
         
-        {/* Legacy redirects for backward compatibility */}
-        <Route path="/jobs" component={() => { window.location.href = "/user/jobs"; return null; }} />
+        {/* Public job and company routes */}
+        <Route path="/jobs" component={Jobs} />
         <Route path="/jobs/:id" component={JobDetail} />
-        <Route path="/companies" component={() => { window.location.href = "/user/companies"; return null; }} />
+        <Route path="/companies" component={Companies} />
         <Route path="/companies/:id" component={CompanyDetail} />
         <Route path="/talent" component={() => { window.location.href = "/company/talents"; return null; }} />
-        <Route path="/career" component={() => { window.location.href = "/user/career"; return null; }} />
-        <Route path="/feed" component={() => { window.location.href = "/user/feed"; return null; }} />
+        {/* Career and Feed routes - already handled above */}
         <Route path="/chat" component={() => { window.location.href = "/user/chat"; return null; }} />
         <Route path="/employment" component={() => { window.location.href = "/company/employees"; return null; }} />
         

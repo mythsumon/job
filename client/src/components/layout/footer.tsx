@@ -204,13 +204,13 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">{t('footer.sections.support.title')}</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/user/feed" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
+                <Link href="/feed" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
                   <span className="w-1 h-1 bg-amber-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
                   {t('footer.sections.support.notices')}
                 </Link>
               </li>
               <li>
-                <Link href="/user/career" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
+                <Link href="/career" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
                   <span className="w-1 h-1 bg-amber-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
                   {t('footer.sections.support.faq')}
                 </Link>

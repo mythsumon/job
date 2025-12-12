@@ -49,20 +49,30 @@ function CompanyLayout({ children }: CompanyLayoutProps) {
   const isAdmin = user?.userType === 'admin' || user?.role === 'admin';
 
   const navigation = [
-    { name: t("companyNav.dashboard"), href: "/company/dashboard", icon: BarChart3 },
-    { name: t("companyNav.jobs"), href: "/company/jobs", icon: PlusCircle },
-    { name: t("companyNav.applications"), href: "/company/applications", icon: Users },
-    { name: t("companyNav.talents"), href: "/company/talents", icon: Users },
-    { name: t("companyNav.chat"), href: "/company/chat", icon: MessageCircle },
-    { name: t("companyNav.employees"), href: "/company/employees", icon: UserCheck },
-    { name: t("companyNav.pipeline"), href: "/company/pipeline", icon: Target },
-    { name: t("companyNav.interviews"), href: "/company/interviews", icon: Calendar },
-    { name: t("companyNav.recommendations"), href: "/company/recommendations", icon: UserCheck },
-    { name: t("companyNav.analytics"), href: "/company/analytics", icon: TrendingUp },
-    { name: t("companyNav.branding"), href: "/company/branding", icon: Crown },
-    { name: t("companyNav.companyInfo"), href: "/company/info", icon: Building2 },
-    { name: t("companyNav.settings"), href: "/company/settings", icon: Settings },
+    { name: t("companyNav.dashboard"), href: "/company/dashboard", icon: BarChart3, section: "main" },
+    { name: t("companyNav.jobs"), href: "/company/jobs", icon: PlusCircle, section: "recruitment" },
+    { name: t("companyNav.applications"), href: "/company/applications", icon: Users, section: "recruitment" },
+    { name: t("companyNav.recommendations"), href: "/company/recommendations", icon: UserCheck, section: "recruitment" },
+    { name: t("companyNav.pipeline"), href: "/company/pipeline", icon: Target, section: "recruitment" },
+    { name: t("companyNav.interviews"), href: "/company/interviews", icon: Calendar, section: "recruitment" },
+    { name: t("companyNav.chat"), href: "/company/chat", icon: MessageCircle, section: "communication" },
+    { name: t("companyNav.employees"), href: "/company/employees", icon: UserCheck, section: "team" },
+    { name: t("companyNav.analytics"), href: "/company/analytics", icon: TrendingUp, section: "analytics" },
+    { name: t("companyNav.branding"), href: "/company/branding", icon: Crown, section: "branding" },
+    { name: t("companyNav.companyInfo"), href: "/company/info", icon: Building2, section: "settings" },
+    { name: t("companyNav.settings"), href: "/company/settings", icon: Settings, section: "settings" },
   ];
+
+  // Group navigation by sections
+  const navigationSections = {
+    main: { label: "", items: navigation.filter(n => n.section === "main") },
+    recruitment: { label: "채용 관리", items: navigation.filter(n => n.section === "recruitment") },
+    communication: { label: "소통", items: navigation.filter(n => n.section === "communication") },
+    team: { label: "팀 관리", items: navigation.filter(n => n.section === "team") },
+    analytics: { label: "분석", items: navigation.filter(n => n.section === "analytics") },
+    branding: { label: "브랜딩", items: navigation.filter(n => n.section === "branding") },
+    settings: { label: "설정", items: navigation.filter(n => n.section === "settings") },
+  };
 
   const isActive = (href: string) => {
     return location === href || (href !== "/company/dashboard" && location.startsWith(href));
@@ -86,35 +96,47 @@ function CompanyLayout({ children }: CompanyLayoutProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="mt-6 px-3">
-            <div className="space-y-1">
-              {navigation.map((item) => {
-                const Icon = item.icon;
+          <nav className="mt-6 px-3 flex-1 overflow-y-auto">
+            <div className="space-y-4">
+              {Object.entries(navigationSections).map(([sectionKey, section]) => {
+                if (section.items.length === 0) return null;
                 return (
-                  <Link key={item.name} href={item.href}>
-                    <div
-                      className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${
-                        isActive(item.href)
-                          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                      }`}
-                    >
-                      <Icon
-                        className={`mr-3 h-5 w-5 ${
-                          isActive(item.href)
-                            ? "text-white"
-                            : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200"
-                        }`}
-                      />
-                      {item.name}
-                      {item.name === t("companyNav.applications") && (
-                        <Badge className="ml-auto bg-red-500 text-white text-xs">12</Badge>
-                      )}
-                      {item.name === t("companyNav.interviews") && (
-                        <Badge className="ml-auto bg-orange-500 text-white text-xs">3</Badge>
-                      )}
-                    </div>
-                  </Link>
+                  <div key={sectionKey} className="space-y-1">
+                    {section.label && (
+                      <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        {section.label}
+                      </div>
+                    )}
+                    {section.items.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link key={item.name} href={item.href}>
+                          <div
+                            className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${
+                              isActive(item.href)
+                                ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            }`}
+                          >
+                            <Icon
+                              className={`mr-3 h-5 w-5 ${
+                                isActive(item.href)
+                                  ? "text-white"
+                                  : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200"
+                              }`}
+                            />
+                            {item.name}
+                            {item.name === t("companyNav.applications") && (
+                              <Badge className="ml-auto bg-red-500 text-white text-xs">12</Badge>
+                            )}
+                            {item.name === t("companyNav.interviews") && (
+                              <Badge className="ml-auto bg-orange-500 text-white text-xs">3</Badge>
+                            )}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </div>

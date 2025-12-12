@@ -133,7 +133,7 @@ export function FeedSection({ compact = false, showCreatePost = true }: FeedSect
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => setLocation("/user/feed")}
+            onClick={() => setLocation("/feed")}
           >
             모두 보기
             <ArrowRight className="w-4 h-4 ml-2" />

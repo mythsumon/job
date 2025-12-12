@@ -105,7 +105,7 @@ export function CareerSection({ compact = false, showHeader = true }: CareerSect
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => setLocation("/user/career")}
+            onClick={() => setLocation("/career")}
           >
             모두 보기
             <ArrowRight className="w-4 h-4 ml-2" />

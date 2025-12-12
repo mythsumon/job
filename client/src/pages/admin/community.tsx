@@ -482,7 +482,7 @@ export default function AdminCommunity() {
                               <div className="max-w-md">
                                 <div className="flex items-start gap-2">
                                   <p className="text-sm line-clamp-2 flex-1">{post.content}</p>
-                                  <Link href={`/user/feed#post-${post.id}`} target="_blank">
+                                  <Link href={`/feed#post-${post.id}`} target="_blank">
                                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0 flex-shrink-0">
                                       <ExternalLink className="h-3 w-3" />
                                     </Button>
@@ -648,7 +648,7 @@ export default function AdminCommunity() {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Badge variant="outline">#{comment.postId}</Badge>
-                                <Link href={`/user/feed#post-${comment.postId}`} target="_blank">
+                                <Link href={`/feed#post-${comment.postId}`} target="_blank">
                                   <Button variant="ghost" size="sm" className="h-5 w-5 p-0">
                                     <ExternalLink className="h-3 w-3" />
                                   </Button>

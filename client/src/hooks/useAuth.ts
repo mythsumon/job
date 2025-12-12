@@ -146,90 +146,17 @@ export function useAuth() {
       // Cancel any ongoing queries
       queryClient.cancelQueries();
       
-      // Auto-login as John Doe (job seeker) after logout
-      const johnDoe = {
-        id: 1,
-        email: "wizar.temuujin1@gmail.com",
-        fullName: "John Doe",
-        full_name: "John Doe",
-        userType: "candidate",
-        user_type: "candidate",
-        profilePicture: null,
-        profile_picture: null,
-        location: "Ulaanbaatar",
-        bio: "Experienced software developer with 5 years of React and TypeScript experience. Passionate about building scalable web applications.",
-        skills: ["React", "TypeScript", "Node.js", "Next.js", "GraphQL"],
-        experience: "5년",
-        education: "KAIST 컴퓨터공학과",
-        major: "Computer Science",
-        preferredIndustry: ["Technology", "Software"],
-        dreamCompany: "네이버",
-        careerLevel: "senior",
-        salaryExpectation: "6000-8000만원",
-        workAvailability: "immediate",
-        isActive: true,
-        is_active: true,
-        username: "johndoe",
-        role: "user",
-        created_at: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-      };
+      console.log('[AUTH] Logout complete, user is now a guest');
       
-      // Set token and user data for John Doe
-      AuthManager.setToken("mock-token-john-doe");
-      localStorage.setItem("user_data", JSON.stringify(johnDoe));
-      localStorage.setItem("auth_token", "mock-token-john-doe");
-      
-      // Update query cache with John Doe
-      queryClient.setQueryData(["/api/auth/user"], johnDoe);
-      
-      console.log('[AUTH] Logout complete, auto-logged in as John Doe (job seeker)');
-      
-      // Force redirect to home page
-      // Use replace instead of href to prevent back button issues
-      // Small delay to ensure state is updated
+      // Redirect to home page as guest
       setTimeout(() => {
         window.location.replace("/");
       }, 100);
     } catch (error) {
       console.error('[AUTH] Logout error:', error);
-      // Even if there's an error, try to auto-login as John Doe
-      try {
-        const johnDoe = {
-          id: 1,
-          email: "wizar.temuujin1@gmail.com",
-          fullName: "John Doe",
-          full_name: "John Doe",
-          userType: "candidate",
-          user_type: "candidate",
-          profilePicture: null,
-          profile_picture: null,
-          location: "Ulaanbaatar",
-          bio: "Experienced software developer with 5 years of React and TypeScript experience. Passionate about building scalable web applications.",
-          skills: ["React", "TypeScript", "Node.js", "Next.js", "GraphQL"],
-          experience: "5년",
-          education: "KAIST 컴퓨터공학과",
-          major: "Computer Science",
-          preferredIndustry: ["Technology", "Software"],
-          dreamCompany: "네이버",
-          careerLevel: "senior",
-          salaryExpectation: "6000-8000만원",
-          workAvailability: "immediate",
-          isActive: true,
-          is_active: true,
-          username: "johndoe",
-          role: "user",
-          created_at: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-        };
-        
-        AuthManager.setToken("mock-token-john-doe");
-        localStorage.setItem("user_data", JSON.stringify(johnDoe));
-        localStorage.setItem("auth_token", "mock-token-john-doe");
-        queryClient.setQueryData(["/api/auth/user"], johnDoe);
-      } catch (autoLoginError) {
-        console.error('[AUTH] Auto-login error:', autoLoginError);
-      }
+      // Clear auth even on error
+      AuthManager.clearAuth();
+      queryClient.setQueryData(["/api/auth/user"], null);
       setTimeout(() => {
         window.location.replace("/");
       }, 100);

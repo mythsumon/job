@@ -41,6 +41,9 @@ export default function AdminCompanies() {
 
   // Local UI state for company statuses (no API calls)
   const [companyStatuses, setCompanyStatuses] = useState<Record<number, string>>({});
+  // TODO: Replace with backend plan value when available
+  // Local UI state for company plans (no API calls)
+  const [companyPlans, setCompanyPlans] = useState<Record<number, "basic" | "professional" | "enterprise">>({});
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [selectedCompanyForReject, setSelectedCompanyForReject] = useState<any>(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -76,6 +79,26 @@ export default function AdminCompanies() {
   // Get company status (from API or local override)
   const getCompanyStatus = (company: any): string => {
     return companyStatuses[company.id] || company.status || "pending";
+  };
+
+  // Get company plan (from API or local override)
+  // TODO: Replace with backend plan value when available
+  const getCompanyPlan = (company: any): "basic" | "professional" | "enterprise" => {
+    return companyPlans[company.id] || company.plan || "basic";
+  };
+
+  // Get plan badge variant
+  const getPlanBadge = (plan: "basic" | "professional" | "enterprise") => {
+    switch (plan) {
+      case "basic":
+        return <Badge variant="secondary" className="bg-gray-500 hover:bg-gray-600">Basic</Badge>;
+      case "professional":
+        return <Badge className="bg-purple-500 hover:bg-purple-600">Professional (Pro)</Badge>;
+      case "enterprise":
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-gray-900">Enterprise (Premium)</Badge>;
+      default:
+        return <Badge variant="secondary">Basic</Badge>;
+    }
   };
 
   const queryClient = useQueryClient();
@@ -428,6 +451,7 @@ export default function AdminCompanies() {
                       <TableHead>소유자</TableHead>
                       <TableHead>등록일</TableHead>
                       <TableHead>상태</TableHead>
+                      <TableHead>Plan</TableHead>
                       <TableHead>작업</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -447,12 +471,14 @@ export default function AdminCompanies() {
                           <TableCell><div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></TableCell>
                           <TableCell><div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></TableCell>
                           <TableCell><div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></TableCell>
+                          <TableCell><div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></TableCell>
                           <TableCell><div className="h-4 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></TableCell>
                         </TableRow>
                       ))
                     ) : filteredCompanies.length > 0 ? (
                       filteredCompanies.map((company: any) => {
                         const status = getCompanyStatus(company);
+                        const plan = getCompanyPlan(company);
                         return (
                           <TableRow key={company.id}>
                             <TableCell>
@@ -524,6 +550,10 @@ export default function AdminCompanies() {
                                  status === "pending" ? "승인대기" : 
                                  status === "rejected" ? "거절됨" : "중지됨"}
                               </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {/* TODO: Replace with backend plan value when available */}
+                              {getPlanBadge(plan)}
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
@@ -672,7 +702,7 @@ export default function AdminCompanies() {
                       })
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                        <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                           기업이 없습니다
                         </TableCell>
                       </TableRow>

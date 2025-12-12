@@ -402,15 +402,6 @@ export default function CompanyDashboard() {
                   <span className="text-xs font-medium">{t("companyNav.applications")}</span>
                 </Button>
               </Link>
-              <Link href="/company/talents">
-                <Button 
-                  variant="outline" 
-                  className="w-full h-auto flex-col py-4 space-y-2 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:border-purple-300 dark:hover:border-purple-700 transition-all"
-                >
-                  <UserSearch className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  <span className="text-xs font-medium">{t("companyNav.talents")}</span>
-                </Button>
-              </Link>
               <Link href="/company/chat">
                 <Button 
                   variant="outline" 
@@ -959,16 +950,10 @@ export default function CompanyDashboard() {
                   <span className="text-xs">{t("companyNav.interviews")}</span>
                 </Button>
               </Link>
-              <Link href="/company/talents">
-                <Button variant="outline" className="w-full flex-col h-auto py-3 space-y-1">
-                  <UserSearch className="h-5 w-5" />
-                  <span className="text-xs">{t("companyNav.talents")}</span>
-                </Button>
-              </Link>
               <Link href="/company/recommendations">
                 <Button variant="outline" className="w-full flex-col h-auto py-3 space-y-1">
-                  <Sparkles className="h-5 w-5" />
-                  <span className="text-xs">{t("companyNav.recommendations")}</span>
+                  <UserSearch className="h-5 w-5" />
+                  <span className="text-xs">{t("companyNav.recommendations") || "인재 추천"}</span>
                 </Button>
               </Link>
             </div>
