@@ -2211,6 +2211,62 @@ export const getMockData = (url: string, method: string = "GET", data?: any): an
     return mockUsers[0];
   }
 
+  // Profile views endpoint
+  if (baseUrl === "/api/user/profile-views") {
+    const userId = new URLSearchParams(url.split("?")[1] || "").get("userId");
+    if (!userId) return [];
+    
+    // Mock profile views data
+    return [
+      {
+        id: 1,
+        viewerId: 2,
+        viewerType: "company",
+        viewerName: "테크스타트",
+        viewerCompany: "테크스타트",
+        viewerTitle: "HR 매니저",
+        viewedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        jobTitle: "프론트엔드 개발자",
+        jobId: 1,
+        source: "application",
+      },
+      {
+        id: 2,
+        viewerId: 101,
+        viewerType: "company",
+        viewerName: "네이버",
+        viewerCompany: "네이버",
+        viewerTitle: "채용 담당자",
+        viewedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+        jobTitle: "백엔드 개발자",
+        jobId: 2,
+        source: "search",
+      },
+      {
+        id: 3,
+        viewerId: 102,
+        viewerType: "company",
+        viewerName: "카카오",
+        viewerCompany: "카카오",
+        viewerTitle: "인사팀",
+        viewedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        jobTitle: "풀스택 개발자",
+        jobId: 3,
+        source: "recommendation",
+      },
+      {
+        id: 4,
+        viewerId: 103,
+        viewerType: "company",
+        viewerName: "쿠팡",
+        viewerCompany: "쿠팡",
+        viewerTitle: "HR",
+        viewedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        source: "direct",
+      },
+    ];
+  }
+
   // Talents endpoint
   if (baseUrl === "/api/talents") {
     return mockUsers.filter((u) => u.userType === "candidate");

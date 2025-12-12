@@ -141,6 +141,20 @@ export default function UserHome() {
     enabled: isAuthenticated && !!user?.id,
   });
 
+  // Fetch profile views count
+  const { data: profileViews = [] } = useQuery({
+    queryKey: ["/api/user/profile-views", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      try {
+        return await apiGet(`/api/user/profile-views?userId=${user.id}`);
+      } catch {
+        return [];
+      }
+    },
+    enabled: isAuthenticated && !!user?.id,
+  });
+
   // Calculate stats
   const stats = {
     applications: applications?.length || 0,
@@ -148,6 +162,8 @@ export default function UserHome() {
     savedJobs: savedJobs?.length || 0,
     resumes: resumes?.length || 0,
   };
+
+  const profileViewsCount = Array.isArray(profileViews) ? profileViews.length : 0;
 
   return (
     <RoleGuard allowedUserTypes={['candidate']}>
@@ -253,19 +269,22 @@ export default function UserHome() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">프로필 완성도</p>
-                      <p className="text-3xl font-bold text-purple-600">85%</p>
+              <Link href="/user/profile-views">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">프로필 조회</p>
+                        <p className="text-3xl font-bold text-purple-600">{profileViewsCount}</p>
+                        <p className="text-xs text-purple-600 mt-1">조회 내역 보기 →</p>
+                      </div>
+                      <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                        <Eye className="w-6 h-6 text-purple-600" />
+                      </div>
                     </div>
-                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                      <User className="w-6 h-6 text-purple-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

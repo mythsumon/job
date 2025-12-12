@@ -13,6 +13,7 @@ import Register from "@/pages/register";
 import Chat from "@/pages/chat";
 import UserChat from "@/pages/user/chat";
 import UserProfile from "@/pages/user/profile";
+import UserProfileViews from "@/pages/user/profile-views";
 import UserSettings from "@/pages/user/settings";
 import UserResumes from "@/pages/user/resumes";
 import UserApplications from "@/pages/user/applications";
@@ -45,7 +46,6 @@ import CompanyJobs from "@/pages/company/jobs";
 import CompanyInterviews from "@/pages/company/interviews";
 import CompanyRecommendations from "@/pages/company/recommendations";
 import CompanyAnalytics from "@/pages/company/analytics";
-import CompanyBranding from "@/pages/company/branding";
 import CompanySettings from "@/pages/company/settings";
 import CompanyEmployees from "@/pages/company/employees";
 import CompanyChat from "@/pages/company/chat";
@@ -136,6 +136,11 @@ function Router() {
             <ProtectedPage><UserProfile /></ProtectedPage>
           </RoleGuard>
         } />
+        <Route path="/user/profile-views" component={() => 
+          <RoleGuard allowedUserTypes={['candidate']}>
+            <ProtectedPage><UserProfileViews /></ProtectedPage>
+          </RoleGuard>
+        } />
         <Route path="/user/settings" component={() => 
           <RoleGuard allowedUserTypes={['candidate', 'employer', 'admin']}>
             <ProtectedPage><UserSettings /></ProtectedPage>
@@ -209,11 +214,6 @@ function Router() {
         <Route path="/company/chat" component={() => 
           <RoleGuard allowedUserTypes={['employer']}>
             <ProtectedPage><CompanyChat /></ProtectedPage>
-          </RoleGuard>
-        } />
-        <Route path="/company/branding" component={() => 
-          <RoleGuard allowedUserTypes={['employer']}>
-            <ProtectedPage><CompanyBranding /></ProtectedPage>
           </RoleGuard>
         } />
         <Route path="/company/settings" component={() => 

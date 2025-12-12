@@ -169,11 +169,25 @@ export default function UserProfile() {
         enabled: !!user?.id,
     });
 
+    // Fetch profile views count
+    const { data: profileViews = [] } = useQuery({
+        queryKey: ["/api/user/profile-views", user?.id],
+        queryFn: async () => {
+            if (!user?.id) return [];
+            try {
+                return await apiGet(`/api/user/profile-views?userId=${user.id}`);
+            } catch {
+                return [];
+            }
+        },
+        enabled: !!user?.id,
+    });
+
     // Calculate activity stats
     const activityStats = {
         resumeCount: Array.isArray(resumes) ? resumes.length : 0,
         applicationCount: Array.isArray(applications) ? applications.length : 0,
-        profileViews: 0, // TODO: Implement profile view tracking
+        profileViews: Array.isArray(profileViews) ? profileViews.length : 0,
         savedJobsCount: Array.isArray(savedJobs) ? savedJobs.length : 0,
     };
 
@@ -916,17 +930,22 @@ export default function UserProfile() {
                                                     </div>
                                                 </CardContent>
                                             </Card>
-                                            <Card>
-                                                <CardContent className="p-4 text-center">
-                                                    <Eye className="w-8 h-8 text-purple-500 mx-auto mb-2" />
-                                                    <div className="text-2xl font-bold text-purple-600">
-                                                        {activityStats.profileViews}
-                                                    </div>
-                                                    <div className="text-sm text-gray-600">
-                                                        프로필 조회
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
+                                            <Link href="/user/profile-views">
+                                                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                                                    <CardContent className="p-4 text-center">
+                                                        <Eye className="w-8 h-8 text-purple-500 mx-auto mb-2" />
+                                                        <div className="text-2xl font-bold text-purple-600">
+                                                            {activityStats.profileViews}
+                                                        </div>
+                                                        <div className="text-sm text-gray-600">
+                                                            프로필 조회
+                                                        </div>
+                                                        <div className="text-xs text-purple-600 mt-2">
+                                                            조회 내역 보기 →
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            </Link>
                                             <Card>
                                                 <CardContent className="p-4 text-center">
                                                     <Target className="w-8 h-8 text-orange-500 mx-auto mb-2" />

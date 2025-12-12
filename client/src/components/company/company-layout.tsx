@@ -13,7 +13,6 @@ import {
   Search,
   Settings,
   Bell,
-  Crown,
   Building2,
   PlusCircle,
   TrendingUp,
@@ -58,7 +57,6 @@ function CompanyLayout({ children }: CompanyLayoutProps) {
     { name: t("companyNav.chat"), href: "/company/chat", icon: MessageCircle, section: "communication" },
     { name: t("companyNav.employees"), href: "/company/employees", icon: UserCheck, section: "team" },
     { name: t("companyNav.analytics"), href: "/company/analytics", icon: TrendingUp, section: "analytics" },
-    { name: t("companyNav.branding"), href: "/company/branding", icon: Crown, section: "branding" },
     { name: t("companyNav.companyInfo"), href: "/company/info", icon: Building2, section: "settings" },
     { name: t("companyNav.settings"), href: "/company/settings", icon: Settings, section: "settings" },
   ];
@@ -70,7 +68,6 @@ function CompanyLayout({ children }: CompanyLayoutProps) {
     communication: { label: "소통", items: navigation.filter(n => n.section === "communication") },
     team: { label: "팀 관리", items: navigation.filter(n => n.section === "team") },
     analytics: { label: "분석", items: navigation.filter(n => n.section === "analytics") },
-    branding: { label: "브랜딩", items: navigation.filter(n => n.section === "branding") },
     settings: { label: "설정", items: navigation.filter(n => n.section === "settings") },
   };
 
