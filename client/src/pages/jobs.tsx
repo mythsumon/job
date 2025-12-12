@@ -10,6 +10,7 @@ import { useDisableRightClick } from "@/hooks/useDisableRightClick";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { apiGet } from "@/lib/queryClient";
 import type { JobWithCompany } from "@shared/schema";
 import type { JobFilters as JobFiltersType } from "@/lib/types";
 
@@ -44,10 +45,15 @@ export default function Jobs() {
   const { data: jobs, isLoading, refetch } = useQuery<JobWithCompany[]>({
     queryKey: ["/api/jobs", queryParams.toString()],
     queryFn: async () => {
-      const response = await fetch(`/api/jobs?${queryParams.toString()}`);
-      if (!response.ok) throw new Error("Failed to fetch jobs");
-      return response.json();
+      const url = queryParams.toString() 
+        ? `/api/jobs?${queryParams.toString()}` 
+        : "/api/jobs";
+      const data = await apiGet<JobWithCompany[]>(url);
+      // Ensure we always return an array
+      return Array.isArray(data) ? data : [];
     },
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   const handleFiltersChange = (newFilters: JobFiltersType) => {
@@ -81,6 +87,7 @@ export default function Jobs() {
 
   // Filter featured jobs
   const featuredJobs = jobs?.filter(job => job.isFeatured) || [];
+  // Show non-featured jobs (featured jobs are shown separately above)
   const regularJobs = jobs?.filter(job => !job.isFeatured) || [];
 
   return (
@@ -173,7 +180,8 @@ export default function Jobs() {
                     </div>
                   </div>
                 ))
-              ) : regularJobs.length > 0 ? (
+              ) : jobs && jobs.length > 0 ? (
+                // Show all jobs (featured are shown separately above)
                 regularJobs.map((job) => (
                   <JobCard
                     key={job.id}
@@ -195,9 +203,16 @@ export default function Jobs() {
             </div>
 
             {/* Load More Button */}
-            {regularJobs.length > 0 && !isLoading && (
+            {jobs && jobs.length > 0 && !isLoading && (
               <div className="text-center mt-8">
-                <Button variant="outline" size="lg">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => {
+                    // 페이지네이션 또는 더 많은 결과 로드 로직
+                    console.log("Load more jobs");
+                  }}
+                >
                   더 많은 채용정보 보기
                 </Button>
               </div>

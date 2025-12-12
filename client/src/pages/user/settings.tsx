@@ -3,9 +3,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Settings, Bell, Shield, Lock, Trash2, Save } from "lucide-react";
+import { Settings, Bell, Shield, Lock, Trash2, Save, ArrowLeft } from "lucide-react";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,7 @@ export default function UserSettings() {
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("notifications");
 
   const { data: settings, isLoading } = useQuery<UserSettings>({
@@ -226,6 +228,17 @@ export default function UserSettings() {
       <Header />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
+          <div className="mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocation("/user/home")}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              뒤로가기
+            </Button>
+          </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">설정</h1>
           <p className="text-muted-foreground">계정 설정을 관리하고 개인정보를 보호하세요.</p>
         </div>

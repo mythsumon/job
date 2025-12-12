@@ -113,19 +113,24 @@ export default function JobSearch({ filters, onFiltersChange, onSearch }: JobSea
           </p>
         </div>
         
-        <div className="bg-white dark:bg-card rounded-2xl p-6 shadow-2xl max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div className="relative" ref={searchRef}>
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                type="text"
-                placeholder={t('jobSearch.form.searchPlaceholder')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={handleKeyPress}
-                onFocus={() => setShowSuggestions(true)}
-                className="search-input"
-              />
+        <div className="bg-white dark:bg-card rounded-2xl p-6 md:p-8 shadow-2xl max-w-5xl mx-auto border border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="relative md:col-span-2" ref={searchRef}>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                직무, 회사, 키워드 검색
+              </label>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 z-10" />
+                <Input
+                  type="text"
+                  placeholder={t('jobSearch.form.searchPlaceholder') || "예: 프론트엔드 개발자, 네이버, React"}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  onFocus={() => setShowSuggestions(true)}
+                  className="pl-11 pr-4 h-12 text-base border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg"
+                />
+              </div>
               
               {/* Search Suggestions Dropdown */}
               {showSuggestions && (searchTerm.length >= 2 || recentSearches.length > 0) && (
@@ -174,62 +179,82 @@ export default function JobSearch({ filters, onFiltersChange, onSearch }: JobSea
             </div>
             
             <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Select
-                value={filters.location || "all"}
-                onValueChange={(value) => onFiltersChange({ ...filters, location: value === "all" ? undefined : value })}
-              >
-                <SelectTrigger className="search-input">
-                  <SelectValue placeholder={t('jobSearch.form.locationPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('jobSearch.form.allLocations')}</SelectItem>
-                  {LOCATIONS.map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {location}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                지역
+              </label>
+              <div className="relative">
+                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 z-10 pointer-events-none" />
+                <Select
+                  value={filters.location || "all"}
+                  onValueChange={(value) => onFiltersChange({ ...filters, location: value === "all" ? undefined : value })}
+                >
+                  <SelectTrigger className="h-12 pl-11 pr-4 text-base border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg bg-white dark:bg-gray-800">
+                    <SelectValue placeholder={t('jobSearch.form.locationPlaceholder') || "모든 지역"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('jobSearch.form.allLocations') || "모든 지역"}</SelectItem>
+                    {LOCATIONS.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
             <div className="relative">
-              <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Select
-                value={filters.industry || "all"}
-                onValueChange={(value) => onFiltersChange({ ...filters, industry: value === "all" ? undefined : value })}
-              >
-                <SelectTrigger className="search-input">
-                  <SelectValue placeholder={t('jobSearch.form.industryPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('jobSearch.form.allIndustries')}</SelectItem>
-                  {INDUSTRIES.map((industry) => (
-                    <SelectItem key={industry} value={industry}>
-                      {industry}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                업종
+              </label>
+              <div className="relative">
+                <Building className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 z-10 pointer-events-none" />
+                <Select
+                  value={filters.industry || "all"}
+                  onValueChange={(value) => onFiltersChange({ ...filters, industry: value === "all" ? undefined : value })}
+                >
+                  <SelectTrigger className="h-12 pl-11 pr-4 text-base border-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 rounded-lg bg-white dark:bg-gray-800">
+                    <SelectValue placeholder={t('jobSearch.form.industryPlaceholder') || "모든 업종"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('jobSearch.form.allIndustries') || "모든 업종"}</SelectItem>
+                    {INDUSTRIES.map((industry) => (
+                      <SelectItem key={industry} value={industry}>
+                        {industry}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             
-            <Button onClick={handleSearch} className="primary-button">
-              <Search className="mr-2 h-4 w-4" />
-              {t('jobSearch.form.searchButton')}
-            </Button>
+            <div className="flex items-end">
+              <Button 
+                onClick={handleSearch} 
+                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg"
+              >
+                <Search className="mr-2 h-5 w-5" />
+                {t('jobSearch.form.searchButton') || "검색"}
+              </Button>
+            </div>
           </div>
           
-          <div className="flex flex-wrap gap-2">
-            {popularTags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                onClick={() => handleTagClick(tag)}
-              >
-                {tag}
-              </Badge>
-            ))}
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">
+              인기 검색어
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {popularTags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200 px-4 py-2 text-sm font-medium border border-gray-300 dark:border-gray-600 rounded-full"
+                  onClick={() => handleTagClick(tag)}
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </div>
           </div>
         </div>
       </div>

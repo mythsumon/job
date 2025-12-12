@@ -53,7 +53,7 @@ export async function apiRequest(
 ): Promise<Response> {
   if (MOCK_MODE) {
     console.log(`[MOCK] ${method} ${url}`, data);
-    const mockData = getMockData(url);
+    const mockData = getMockData(url, method, data);
     return new MockResponse(mockData) as any;
   }
 
@@ -61,16 +61,20 @@ export async function apiRequest(
   // Get JWT token from localStorage (try both possible keys)
   const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
   
+  // Check if data is FormData
+  const isFormData = data instanceof FormData;
+  
   const config: RequestInit = {
     method,
     headers: {
-      'Content-Type': 'application/json',
+      // Don't set Content-Type for FormData, let browser set it with boundary
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       'Accept': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options?.headers,
     },
     credentials: 'include',
-    body: data ? JSON.stringify(data) : undefined,
+    body: data ? (isFormData ? data : JSON.stringify(data)) : undefined,
     ...options,
   };
 

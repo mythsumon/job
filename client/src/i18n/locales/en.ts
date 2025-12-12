@@ -6,6 +6,7 @@ export const en = {
       companies: "Companies", 
       career: "Career Guide",
       community: "Community",
+      pricing: "Pricing",
       messages: "Messages",
     },
     search: {
@@ -352,6 +353,7 @@ export const en = {
     thisWeek: "This Week",
     thisMonth: "This Month",
     all: "All",
+    viewAll: "View All",
     nav: {
       home: "Home",
       jobs: "Jobs",
@@ -362,6 +364,18 @@ export const en = {
       placeholder: "Search jobs, companies, keywords...",
       pressEnter: "Press Enter to search",
     },
+    view: "Overview",
+    experience: "Experience",
+    education: "Education",
+    skills: "Skills",
+    bio: "Bio",
+    resume: "Resume",
+    noResume: "No resume information available.",
+    noData: "No data available.",
+    actions: {
+      message: "Message",
+      download: "Download"
+    }
   },
 
   // Navigation
@@ -1000,9 +1014,14 @@ export const en = {
     interviews: "Interviews",
     recommendations: "Talent Recommendations",
     branding: "Branding",
+    companyProfile: "Company Profile",
+    companyInfo: "Company Information",
     settings: "Settings",
     backToUser: "Go to User Site",
     logout: "Logout",
+    talents: "Talents",
+    chat: "Chat",
+    employees: "Employees",
   },
 
   // Company Dashboard
@@ -1070,6 +1089,39 @@ export const en = {
     viewAllActivity: "View All Activity",
     hiringPipeline: "Hiring Pipeline",
     performanceMetrics: "Performance Metrics",
+    subtitle: "Overview of your recruitment activities and performance",
+    jobViews: "Job Views",
+    directApplication: "Direct Application",
+    headhunting: "Headhunting",
+    referral: "Referral",
+    social: "Social Media",
+    frontendDeveloper: "Frontend Developer",
+    backendDeveloper: "Backend Developer",
+    dataAnalyst: "Data Analyst",
+    marketingManager: "Marketing Manager",
+    uiuxDesigner: "UI/UX Designer",
+    years: "years",
+    interviewPending: "Interview Pending",
+    documentReview: "Document Review",
+    firstRoundPassed: "First Round Passed",
+    faceToFaceInterview: "Face-to-Face Interview",
+    today: "Today",
+    tomorrow: "Tomorrow",
+    hoursAgo: "hours ago",
+    daysAgo: "days ago",
+    daysLater: "days later",
+    jan: "Jan",
+    feb: "Feb",
+    mar: "Mar",
+    apr: "Apr",
+    may: "May",
+    jun: "Jun",
+    department: "Department",
+    developmentTeam: "Development Team",
+    dataTeam: "Data Team",
+    location: "Location",
+    seoulGangnam: "Seoul, Gangnam",
+    seoulSeocho: "Seoul, Seocho",
   },
 
   // User Pages
@@ -1514,6 +1566,20 @@ export const en = {
       rejected: "Rejected"
     },
     
+    actions: {
+      viewProfile: "View Profile",
+      contact: "Contact",
+      schedule: "Schedule Interview",
+      chat: "Start Chat"
+    },
+    
+    candidateProfile: "Candidate Profile",
+    appliedAt: "Applied At",
+    experience: "Experience",
+    education: "Education",
+    skills: "Skills",
+    notes: "Notes",
+    
     tabs: {
       all: "All",
       review: "Document Review",
@@ -1626,7 +1692,9 @@ export const en = {
       approve: "Approve",
       reject: "Reject",
       evaluate: "Evaluate",
-      terminate: "Terminate"
+      terminate: "Terminate",
+      addEmployee: "Add Employee",
+      select: "Select"
     },
     pendingRequests: {
       title: "Pending Employment Requests",
@@ -1666,6 +1734,30 @@ export const en = {
     period: "Employment Period",
     present: "Present",
     terminationReason: "Termination Reason",
+    createEmployee: {
+      title: "Add New Employee",
+      searchPlaceholder: "Search by name or email...",
+      searchHint: "Enter a name or email to search for users",
+      noResults: "No users found",
+      createNewUser: "Create New User"
+    },
+    createUser: {
+      title: "Create New User",
+      email: "Email",
+      password: "Password",
+      passwordPlaceholder: "Minimum 6 characters",
+      fullName: "Full Name",
+      fullNamePlaceholder: "Enter full name",
+      phone: "Phone",
+      phonePlaceholder: "+976 12345678",
+      location: "Location",
+      locationPlaceholder: "City, Country",
+      userType: "User Type",
+      jobSeeker: "Job Seeker",
+      employer: "Employer",
+      create: "Create User",
+      creating: "Creating..."
+    },
     toast: {
       approveSuccess: {
         title: "Approval Complete",
@@ -1682,6 +1774,22 @@ export const en = {
       evaluationSuccess: {
         title: "Evaluation Submitted",
         description: "Employee evaluation has been recorded."
+      },
+      createSuccess: {
+        title: "Employee Request Created",
+        description: "Employment request has been created successfully."
+      },
+      createError: {
+        title: "Error",
+        description: "Failed to create employee request."
+      },
+      createUserSuccess: {
+        title: "User Created",
+        description: "User has been created successfully."
+      },
+      createUserError: {
+        title: "Error",
+        description: "Failed to create user."
       }
     }
   },
@@ -2166,5 +2274,4 @@ export const en = {
       }
     }
   }
-
 };

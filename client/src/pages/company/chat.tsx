@@ -18,8 +18,6 @@ import {
   MessageCircle,
   Users,
   Clock,
-  Phone,
-  Video,
   MoreVertical,
   Paperclip,
   Smile,
@@ -291,12 +289,6 @@ export default function CompanyChat() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm">
-                      <Phone className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Video className="h-4 w-4" />
-                    </Button>
                     <Button variant="outline" size="sm">
                       <MoreVertical className="h-4 w-4" />
                     </Button>

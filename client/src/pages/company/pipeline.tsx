@@ -31,6 +31,10 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useState } from "react";
+import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+import { ConvertToEmployeeDialog } from "@/components/company/convert-to-employee-dialog";
 
 const getPipelineStages = (t: any) => [
   { id: "sourced", name: t('companyPipeline.stages.sourced'), color: "bg-gray-100 text-gray-800", count: 8 },
@@ -132,6 +136,26 @@ const getPriorityText = (priority: string, t: any) => {
 
 export default function CompanyPipeline() {
   const { t } = useLanguage();
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
+  const [selectedTalentForSchedule, setSelectedTalentForSchedule] = useState<any>(null);
+  const [isConvertToEmployeeDialogOpen, setIsConvertToEmployeeDialogOpen] = useState(false);
+  const [selectedTalentForConvert, setSelectedTalentForConvert] = useState<any>(null);
+
+  const handleScheduleInterview = (talent: any) => {
+    setSelectedTalentForSchedule(talent);
+    setIsScheduleDialogOpen(true);
+  };
+
+  const handleScheduleSubmit = () => {
+    toast({
+      title: t("common.success") || "성공",
+      description: "면접 일정이 추가되었습니다.",
+    });
+    setIsScheduleDialogOpen(false);
+    setLocation("/company/interviews");
+  };
   const pipelineStages = getPipelineStages(t);
 
   const getStageColor = (stageId: string) => {
@@ -404,19 +428,75 @@ export default function CompanyPipeline() {
                   </div>
                   
                   <div className="flex flex-col space-y-2">
-                    <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600">
+                    <Button 
+                      size="sm" 
+                      className="bg-gradient-to-r from-blue-500 to-purple-600"
+                      onClick={() => {
+                        toast({
+                          title: t("common.success") || "성공",
+                          description: `${talent.name}님에게 연락을 시작합니다.`,
+                        });
+                        // Navigate to chat or open chat dialog
+                      }}
+                    >
                       <MessageSquare className="h-4 w-4 mr-1" />
                       {t('companyPipeline.actions.contact')}
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedTalent(talent);
+                        setIsEditDialogOpen(true);
+                      }}
+                    >
                       <Edit className="h-4 w-4 mr-1" />
                       {t('companyPipeline.actions.edit')}
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleScheduleInterview(talent)}
+                    >
                       <Calendar className="h-4 w-4 mr-1" />
                       {t('companyPipeline.actions.schedule')}
                     </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                    {(talent.stage === "offered" || talent.stage === "hired") && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                        onClick={() => {
+                          setSelectedTalentForConvert({
+                            id: talent.id,
+                            userId: talent.id, // 실제로는 userId가 필요
+                            name: talent.name,
+                            email: talent.email,
+                            phone: talent.phone,
+                            jobTitle: talent.currentRole,
+                            department: "",
+                          });
+                          setIsConvertToEmployeeDialogOpen(true);
+                        }}
+                      >
+                        <UserPlus className="h-4 w-4 mr-1" />
+                        직원으로 전환
+                      </Button>
+                    )}
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => {
+                        if (confirm(`${talent.name}님을 파이프라인에서 제거하시겠습니까?`)) {
+                          setTalentCandidates(prev => prev.filter(t => t.id !== talent.id));
+                          toast({
+                            title: t("common.success") || "성공",
+                            description: `${talent.name}님이 파이프라인에서 제거되었습니다.`,
+                          });
+                        }
+                      }}
+                    >
                       <Trash2 className="h-4 w-4 mr-1" />
                       {t('companyPipeline.actions.remove')}
                     </Button>
@@ -427,6 +507,107 @@ export default function CompanyPipeline() {
           ))}
         </div>
       </div>
-          </CompanyLayout>
-    );
+
+      {/* Schedule Interview Dialog */}
+      <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t('companyInterviews.addInterviewDialog.title') || '면접 일정 추가'}</DialogTitle>
+            <DialogDescription>
+              {selectedTalentForSchedule && (
+                <>
+                  {selectedTalentForSchedule.name}님과의 면접 일정을 잡아주세요.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">{t('companyInterviews.form.interviewer') || '면접관'}</label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('companyInterviews.form.interviewerPlaceholder') || '면접관 선택'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">{t('companyInterviews.form.interviewerExample1') || '박팀장'}</SelectItem>
+                    <SelectItem value="2">{t('companyInterviews.form.interviewerExample2') || '최CTO'}</SelectItem>
+                    <SelectItem value="3">{t('companyInterviews.form.interviewerExample3') || '김부장'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">{t('companyInterviews.form.type') || '면접 유형'}</label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('companyInterviews.form.typePlaceholder') || '유형 선택'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="video">{t('companyInterviews.types.video') || '화상면접'}</SelectItem>
+                    <SelectItem value="inPerson">{t('companyInterviews.types.inPerson') || '대면면접'}</SelectItem>
+                    <SelectItem value="phone">{t('companyInterviews.types.phone') || '전화면접'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">{t('companyInterviews.form.date') || '날짜'}</label>
+                <Input type="date" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">{t('companyInterviews.form.time') || '시간'}</label>
+                <Input type="time" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">{t('companyInterviews.form.duration') || '소요시간'}</label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('companyInterviews.form.durationPlaceholder') || '시간 선택'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">{t('companyInterviews.form.duration30') || '30분'}</SelectItem>
+                    <SelectItem value="60">{t('companyInterviews.form.duration60') || '60분'}</SelectItem>
+                    <SelectItem value="90">{t('companyInterviews.form.duration90') || '90분'}</SelectItem>
+                    <SelectItem value="120">{t('companyInterviews.form.duration120') || '120분'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">{t('companyInterviews.form.location') || '장소 / 링크'}</label>
+                <Input placeholder={t('companyInterviews.form.locationPlaceholder') || '회의실 또는 화상회의 링크'} />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">{t('companyInterviews.form.notes') || '메모'}</label>
+              <Textarea placeholder={t('companyInterviews.form.notesPlaceholder') || '면접에 대한 메모...'} />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsScheduleDialogOpen(false)}>
+                {t('companyInterviews.form.cancel') || '취소'}
+              </Button>
+              <Button onClick={handleScheduleSubmit} className="bg-gradient-to-r from-blue-600 to-purple-600">
+                {t('companyInterviews.form.schedule') || '일정 추가'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Convert to Employee Dialog */}
+      {selectedTalentForConvert && (
+        <ConvertToEmployeeDialog
+          open={isConvertToEmployeeDialogOpen}
+          onOpenChange={setIsConvertToEmployeeDialogOpen}
+          candidate={selectedTalentForConvert}
+          onSuccess={() => {
+            // Update talent stage to "hired" after conversion
+            // This would typically update the backend
+          }}
+        />
+      )}
+    </CompanyLayout>
+  );
 }

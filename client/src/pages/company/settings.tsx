@@ -24,9 +24,32 @@ import {
   Trash2,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 export default function CompanySettings() {
   const { t } = useLanguage();
+  const { toast } = useToast();
+  const [settings, setSettings] = useState({
+    companyName: "테크스타트",
+    industry: "tech",
+    companySize: "startup",
+    foundedYear: "2020",
+    email: "hr@techstart.com",
+    phone: "02-1234-5678",
+    address: "서울시 강남구 테헤란로 123",
+    website: "https://techstart.com",
+    shortDescription: "혁신적인 기술로 세상을 변화시키는 스타트업입니다.",
+    detailedDescription: "우리는 최신 기술을 활용하여 사용자들에게 더 나은 경험을 제공하고, 지속가능한 미래를 만들어가는 것을 목표로 합니다. 젊고 역동적인 팀과 함께 성장할 인재를 찾고 있습니다.",
+  });
+
+  const handleSaveSettings = () => {
+    // Save settings logic here
+    toast({
+      title: t("common.success") || "성공",
+      description: "설정이 저장되었습니다.",
+    });
+  };
 
   return (
     <CompanyLayout>
@@ -42,7 +65,7 @@ export default function CompanySettings() {
               {t('companySettings.subtitle')}
             </p>
           </div>
-          <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
+          <Button className="bg-gradient-to-r from-blue-600 to-purple-600" onClick={handleSaveSettings}>
             <Save className="h-4 w-4 mr-2" />
             {t('companySettings.saveSettings')}
           </Button>
@@ -72,11 +95,15 @@ export default function CompanySettings() {
                 <CardContent className="space-y-4">
                   <div>
                     <Label>{t('companySettings.company.companyName')}</Label>
-                    <Input value="테크스타트" className="mt-2" />
+                    <Input 
+                      value={settings.companyName} 
+                      onChange={(e) => setSettings({...settings, companyName: e.target.value})}
+                      className="mt-2" 
+                    />
                   </div>
                   <div>
                     <Label>{t('companySettings.company.industry')}</Label>
-                    <Select>
+                    <Select value={settings.industry} onValueChange={(value) => setSettings({...settings, industry: value})}>
                       <SelectTrigger className="mt-2">
                         <SelectValue placeholder={t('companySettings.company.industryPlaceholder')} />
                       </SelectTrigger>
@@ -91,7 +118,7 @@ export default function CompanySettings() {
                   </div>
                   <div>
                     <Label>{t('companySettings.company.companySize')}</Label>
-                    <Select>
+                    <Select value={settings.companySize} onValueChange={(value) => setSettings({...settings, companySize: value})}>
                       <SelectTrigger className="mt-2">
                         <SelectValue placeholder={t('companySettings.company.sizePlaceholder')} />
                       </SelectTrigger>
@@ -105,7 +132,12 @@ export default function CompanySettings() {
                   </div>
                   <div>
                     <Label>{t('companySettings.company.foundedYear')}</Label>
-                    <Input type="number" value="2020" className="mt-2" />
+                    <Input 
+                      type="number" 
+                      value={settings.foundedYear} 
+                      onChange={(e) => setSettings({...settings, foundedYear: e.target.value})}
+                      className="mt-2" 
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -118,19 +150,35 @@ export default function CompanySettings() {
                 <CardContent className="space-y-4">
                   <div>
                     <Label>{t('companySettings.company.email')}</Label>
-                    <Input value="hr@techstart.com" className="mt-2" />
+                    <Input 
+                      value={settings.email} 
+                      onChange={(e) => setSettings({...settings, email: e.target.value})}
+                      className="mt-2" 
+                    />
                   </div>
                   <div>
                     <Label>{t('companySettings.company.phone')}</Label>
-                    <Input value="02-1234-5678" className="mt-2" />
+                    <Input 
+                      value={settings.phone} 
+                      onChange={(e) => setSettings({...settings, phone: e.target.value})}
+                      className="mt-2" 
+                    />
                   </div>
                   <div>
                     <Label>{t('companySettings.company.address')}</Label>
-                    <Input value="서울시 강남구 테헤란로 123" className="mt-2" />
+                    <Input 
+                      value={settings.address} 
+                      onChange={(e) => setSettings({...settings, address: e.target.value})}
+                      className="mt-2" 
+                    />
                   </div>
                   <div>
                     <Label>{t('companySettings.company.website')}</Label>
-                    <Input value="https://techstart.com" className="mt-2" />
+                    <Input 
+                      value={settings.website} 
+                      onChange={(e) => setSettings({...settings, website: e.target.value})}
+                      className="mt-2" 
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -144,7 +192,8 @@ export default function CompanySettings() {
                   <div>
                     <Label>{t('companySettings.company.shortDescription')}</Label>
                     <Textarea 
-                      value="혁신적인 기술로 세상을 변화시키는 스타트업입니다."
+                      value={settings.shortDescription}
+                      onChange={(e) => setSettings({...settings, shortDescription: e.target.value})}
                       rows={3}
                       className="mt-2"
                     />
@@ -152,7 +201,8 @@ export default function CompanySettings() {
                   <div>
                     <Label>{t('companySettings.company.detailedDescription')}</Label>
                     <Textarea 
-                      value="우리는 최신 기술을 활용하여 사용자들에게 더 나은 경험을 제공하고, 지속가능한 미래를 만들어가는 것을 목표로 합니다. 젊고 역동적인 팀과 함께 성장할 인재를 찾고 있습니다."
+                      value={settings.detailedDescription}
+                      onChange={(e) => setSettings({...settings, detailedDescription: e.target.value})}
                       rows={5}
                       className="mt-2"
                     />

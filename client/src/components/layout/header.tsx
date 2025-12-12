@@ -1,5 +1,5 @@
 ﻿import { Link, useLocation } from "wouter";
-import { Briefcase, Building2, Users, BookOpen, Heart, MessageCircle, User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { Briefcase, Building2, Users, BookOpen, Heart, MessageCircle, User, Settings, LogOut, ChevronDown, CreditCard, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { MobileNav } from "@/components/mobile/mobile-nav";
 import { LanguageSelector } from "@/components/common/language-selector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { useNotifications } from "@/hooks/useNotifications";
 import { useDisableRightClick } from "@/hooks/useDisableRightClick";
 import type { Company } from "@shared/schema";
 
@@ -16,6 +17,7 @@ export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const { t } = useLanguage();
   const { unreadCount, hasUnread } = useUnreadMessages();
+  const { unreadCount: notificationUnreadCount, hasUnread: hasUnreadNotifications } = useNotifications();
   useDisableRightClick();
   const { data: userCompany } = useQuery({
     queryKey: ['/api/user/primary-company'],
@@ -30,6 +32,9 @@ export default function Header() {
   const navigation = [
     { name: t("header.nav.jobs"), href: "/user/jobs", icon: Briefcase },
     { name: t("header.nav.companies"), href: "/user/companies", icon: Building2 },
+  ];
+
+  const careerNavigation = [
     { name: t("header.nav.career"), href: "/user/career", icon: BookOpen },
     { name: t("header.nav.community"), href: "/user/feed", icon: Heart },
   ];
@@ -45,50 +50,112 @@ export default function Header() {
               WorkMongolia
             </span>
           </Link>
-          <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
+          <nav className="hidden lg:flex items-center space-x-3 xl:space-x-4">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
                 <Link key={item.name} href={item.href}>
                   <Button
                     variant="ghost"
-                    className={`px-3 xl:px-4 py-2 rounded-xl transition-all duration-200 text-sm ${
+                    className={`px-4 xl:px-5 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium ${
                       isActive(item.href)
                         ? "bg-primary/10 text-primary shadow-sm"
                         : "hover:bg-primary/5 hover:text-primary"
                     }`}
                   >
-                    <Icon className="h-4 w-4 mr-1 xl:mr-2" />
+                    <Icon className="h-4 w-4 mr-2 xl:mr-2.5" />
                     <span className="hidden xl:inline">{item.name}</span>
                     <span className="xl:hidden">{item.name.substring(0, 2)}</span>
                   </Button>
                 </Link>
               );
             })}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={`px-4 xl:px-5 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium ${
+                    isActive("/user/career") || isActive("/user/feed")
+                      ? "bg-primary/10 text-primary shadow-sm"
+                      : "hover:bg-primary/5 hover:text-primary"
+                  }`}
+                >
+                  <BookOpen className="h-4 w-4 mr-2 xl:mr-2.5" />
+                  <span className="hidden xl:inline">{t("header.nav.career")}</span>
+                  <span className="xl:hidden">{t("header.nav.career").substring(0, 2)}</span>
+                  <ChevronDown className="h-3 w-3 ml-1.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                {careerNavigation.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <DropdownMenuItem key={item.name} asChild>
+                      <Link href={item.href} className="flex items-center">
+                        <Icon className="h-4 w-4 mr-2" />
+                        {item.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Link href="/pricing">
+              <Button
+                variant="ghost"
+                className={`px-4 xl:px-5 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium ${
+                  isActive("/pricing")
+                    ? "bg-primary/10 text-primary shadow-sm"
+                    : "hover:bg-primary/5 hover:text-primary"
+                }`}
+              >
+                <CreditCard className="h-4 w-4 mr-2 xl:mr-2.5" />
+                <span className="hidden xl:inline">{t("header.nav.pricing") || "요금제"}</span>
+                <span className="xl:hidden">{t("header.nav.pricing")?.substring(0, 2) || "요금"}</span>
+              </Button>
+            </Link>
           </nav>
-          <div className="hidden lg:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-5">
             <LanguageSelector />
             {isAuthenticated ? (
-              <div className="flex items-center space-x-3">
-                <Link href="/user/chat">
+              <div className="flex items-center space-x-4">
+                <Link href={user?.userType === 'employer' ? '/company/notifications' : '/user/notifications'}>
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     className={`hover:bg-primary/10 hover:text-primary relative ${
-                      isActive('/user/chat') ? 'bg-primary/10 text-primary' : ''
+                      isActive('/user/notifications') || isActive('/company/notifications') ? 'bg-primary/10 text-primary' : ''
                     }`}
                   >
-                    <MessageCircle className="h-5 w-5" />
-                    {hasUnread && (
+                    <Bell className="h-5 w-5" />
+                    {hasUnreadNotifications && (
                       <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse min-w-[20px]">
-                        {unreadCount > 99 ? '99+' : unreadCount}
+                        {notificationUnreadCount > 99 ? '99+' : notificationUnreadCount}
                       </span>
                     )}
                   </Button>
                 </Link>
+                {user?.userType !== 'admin' && (
+                  <Link href="/user/chat">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={`hover:bg-primary/10 hover:text-primary relative ${
+                        isActive('/user/chat') ? 'bg-primary/10 text-primary' : ''
+                      }`}
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                      {hasUnread && (
+                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse min-w-[20px]">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </Button>
+                  </Link>
+                )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2 px-3 py-2 bg-primary/5 rounded-xl hover:bg-primary/10 transition-colors">
+                    <Button variant="ghost" className="flex items-center space-x-3 px-4 py-2.5 bg-primary/5 rounded-xl hover:bg-primary/10 transition-colors">
                       {user?.userType === 'employer' && userCompany?.logo ? (
                         <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-primary/20">
                           <img 
@@ -176,7 +243,7 @@ export default function Header() {
                 </DropdownMenu>
               </div>
             ) : (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-4">
                 <Link href="/login">
                   <Button variant="ghost" className="hover:bg-primary/10 hover:text-primary">
                     {t("header.auth.login")}

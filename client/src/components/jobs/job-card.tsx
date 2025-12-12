@@ -61,11 +61,11 @@ export default function JobCard({
 
     const getExperienceLabel = (experience: string) => {
         const labels: Record<string, string> = {
-            entry: "경력 0-2년",
-            junior: "경력 3-5년",
-            mid: "경력 3-7년",
-            senior: "경력 6-10년",
-            expert: "경력 10년+",
+            entry: "신입 (0-2년)",
+            junior: "주니어 (3-5년)",
+            mid: "미드 (3-7년)",
+            senior: "시니어 (6-10년)",
+            expert: "전문가 (10년+)",
         };
         return labels[experience] || experience;
     };
@@ -73,8 +73,8 @@ export default function JobCard({
     const getJobTypeLabel = (type: string) => {
         const labels: Record<string, string> = {
             full_time: "정규직",
-            part_time: "계약직",
-            contract: "프리랜서",
+            contract: "계약직",
+            freelance: "프리랜서",
             internship: "인턴십",
         };
         return labels[type] || type;

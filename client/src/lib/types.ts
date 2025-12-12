@@ -35,8 +35,8 @@ export const EXPERIENCE_LEVELS = [
 
 export const JOB_TYPES = [
   { value: 'full_time', label: '정규직' },
-  { value: 'part_time', label: '계약직' },
-  { value: 'contract', label: '프리랜서' },
+  { value: 'contract', label: '계약직' },
+  { value: 'freelance', label: '프리랜서' },
   { value: 'internship', label: '인턴십' }
 ];
 
@@ -44,7 +44,7 @@ export const SALARY_RANGES = [
   { value: 20000000, label: '2,000만원 이하' },
   { value: 40000000, label: '2,000-4,000만원' },
   { value: 60000000, label: '4,000-6,000만원' },
-  { value: 80000000, label: '6,000만원 이상' }
+  { value: 60000000, label: '6,000만원 이상' }
 ];
 
 export const COMPANY_SIZES = [
@@ -70,6 +70,28 @@ export const INDUSTRIES = [
   '미디어/엔터테인먼트',
   '컨설팅',
   '정부/공공기관'
+];
+
+// 사용자 프로필에서 사용하는 희망 근무 분야 옵션 (복수 선택 가능)
+export const PREFERRED_INDUSTRIES = [
+  'IT/소프트웨어',
+  '이커머스',
+  '금융/은행',
+  '교육',
+  '마케팅/광고',
+  '건설/부동산',
+  '게임',
+  '스타트업',
+  '제조업',
+  '미디어/엔터테인먼트',
+  '디자인',
+  '에너지',
+  '핀테크',
+  '대기업',
+  '의료/헬스케어',
+  '컨설팅',
+  '물류/유통',
+  '공공기관'
 ];
 
 export const LOCATIONS = [

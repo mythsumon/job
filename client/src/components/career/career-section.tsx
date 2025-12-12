@@ -267,3 +267,10 @@ export function CareerSection({ compact = false, showHeader = true }: CareerSect
   );
 }
 
+
+
+
+
+
+
+

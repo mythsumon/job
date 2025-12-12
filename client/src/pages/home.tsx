@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
-import { Briefcase, Building, Users, TrendingUp, Star, ArrowRight, Zap, Award, Trophy } from "lucide-react";
+import { Briefcase, Building, Users, TrendingUp, Star, ArrowRight, Zap, Award, Trophy, LayoutDashboard } from "lucide-react";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import JobSearch from "@/components/jobs/job-search";
@@ -18,13 +18,26 @@ import type { JobFilters, Stats } from "@/lib/types";
 import { useState, useEffect } from "react";
 import { CareerSection } from "@/components/career/career-section";
 import { FeedSection } from "@/components/feed/feed-section";
+import AdvertisementBanner from "@/components/banners/advertisement-banner";
 import { apiGet } from "@/lib/queryClient";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { JobCreateForm } from "@/components/jobs/JobCreateForm";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const { t } = useTranslation();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [filters, setFilters] = useState<JobFilters>({});
+  const [isCreateJobDialogOpen, setIsCreateJobDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   // Apply security measures
   useDisableRightClick();
@@ -160,6 +173,11 @@ export default function Home() {
         onSearch={handleSearch}
       />
 
+      {/* Home Top Banner */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <AdvertisementBanner position="home_top" />
+      </div>
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Quick Stats Bar */}
         <section className="mb-12 sm:mb-16 -mt-6 sm:-mt-8">
@@ -270,13 +288,29 @@ export default function Home() {
                   </Card>
                 ))}
               </div>
-            ) : (
+            ) : featuredJobs && featuredJobs.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                {featuredJobs?.slice(0, 8).map((job) => (
+                {featuredJobs.slice(0, 8).map((job) => (
                   <div key={job.id} className="h-80">
                     <JobCard job={job} isFeatured className="h-full" />
                   </div>
                 ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Star className="w-16 h-16 mx-auto mb-4 text-amber-300 dark:text-amber-600" />
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  프리미엄 채용공고가 없습니다
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  곧 새로운 프리미엄 채용공고가 등록될 예정입니다.
+                </p>
+                <Link href="/user/jobs">
+                  <Button variant="outline" className="bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600">
+                    전체 채용공고 보기
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
@@ -349,13 +383,29 @@ export default function Home() {
                   </Card>
                 ))}
               </div>
-            ) : (
+            ) : proJobs && proJobs.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                {proJobs?.slice(0, 8).map((job) => (
+                {proJobs.slice(0, 8).map((job) => (
                   <div key={job.id} className="h-80">
                     <JobCard job={job} className="h-full bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100 dark:from-gray-800 dark:via-slate-800 dark:to-gray-900 border-2 border-gray-300/60 dark:border-gray-600/60 hover:border-gray-400/80 dark:hover:border-gray-500/80 shadow-lg shadow-gray-500/10 hover:shadow-xl hover:shadow-gray-500/20" />
                   </div>
                 ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Trophy className="w-16 h-16 mx-auto mb-4 text-indigo-300 dark:text-indigo-600" />
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  Pro 채용공고가 없습니다
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  곧 새로운 Pro 채용공고가 등록될 예정입니다.
+                </p>
+                <Link href="/user/jobs">
+                  <Button variant="outline" className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-600 hover:to-violet-600">
+                    전체 채용공고 보기
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
@@ -411,10 +461,10 @@ export default function Home() {
                 </Card>
               ))}
             </div>
-          ) : (
+          ) : displayedRecentJobs && displayedRecentJobs.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                {displayedRecentJobs?.map((job) => (
+                {displayedRecentJobs.map((job) => (
                   <JobCard key={job.id} job={job} className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md" />
                 ))}
               </div>
@@ -442,6 +492,22 @@ export default function Home() {
                 </div>
               )}
             </>
+          ) : (
+            <div className="text-center py-12">
+              <Briefcase className="w-16 h-16 mx-auto mb-4 text-blue-300 dark:text-blue-600" />
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                채용공고가 없습니다
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                새로운 채용공고가 등록되면 여기에 표시됩니다.
+              </p>
+              <Link href="/user/jobs">
+                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
+                  채용공고 검색하기
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
           )}
         </section>
 
@@ -471,9 +537,9 @@ export default function Home() {
                 </Card>
               ))}
             </div>
-          ) : (
+          ) : companies && companies.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-              {companies?.slice(0, 6).map((company) => {
+              {companies.slice(0, 6).map((company) => {
                 const generateCompanyLogo = (name: string) => {
                   const colors = [
                     "from-blue-500 to-blue-600",
@@ -497,7 +563,7 @@ export default function Home() {
                 const logo = generateCompanyLogo(company.name);
                 
                 return (
-                  <Link key={company.id} href={`/companies/${company.id}`}>
+                  <Link key={company.id} href={`/user/companies/${company.id}`}>
                     <Card className="hover:shadow-md transition-shadow cursor-pointer">
                       <CardContent className="p-6 text-center">
                         <div className={`w-16 h-16 bg-gradient-to-br ${logo.color} rounded-lg flex items-center justify-center text-white font-bold mx-auto mb-4`}>
@@ -511,6 +577,22 @@ export default function Home() {
                   </Link>
                 );
               })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Building className="w-16 h-16 mx-auto mb-4 text-purple-300 dark:text-purple-600" />
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                등록된 기업이 없습니다
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                곧 새로운 기업들이 등록될 예정입니다.
+              </p>
+              <Link href="/user/companies">
+                <Button variant="outline" className="bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700">
+                  전체 기업 보기
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
             </div>
           )}
           
@@ -581,16 +663,62 @@ export default function Home() {
                 </Button>
               </Link>
               {isAuthenticated && user?.userType === 'employer' ? (
-                <Link href="/company/dashboard">
+                <>
+                  <Dialog open={isCreateJobDialogOpen} onOpenChange={setIsCreateJobDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-blue-600 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg">
+                        {t('companyJobs.createJob') || '채용공고 작성'}
+                        <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>{t('companyJobs.createJob') || '새 채용공고 작성'}</DialogTitle>
+                        <DialogDescription>
+                          {t('companyJobs.createJobDescription') || '새로운 채용공고를 작성합니다'}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <JobCreateForm
+                        onSubmit={(data) => {
+                          toast({
+                            title: t("common.success") || "성공",
+                            description: "채용공고가 생성되었습니다.",
+                          });
+                          setIsCreateJobDialogOpen(false);
+                          setLocation("/company/jobs");
+                        }}
+                        onSaveDraft={(data) => {
+                          toast({
+                            title: t("common.success") || "성공",
+                            description: "초안이 저장되었습니다.",
+                          });
+                          setIsCreateJobDialogOpen(false);
+                          setLocation("/company/jobs");
+                        }}
+                        onCancel={() => setIsCreateJobDialogOpen(false)}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                  <Link href="/company/dashboard">
+                    <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-blue-600 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg">
+                      {t('home.cta.buttons.employer')}
+                      <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <Link href="/register?type=employer">
                   <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-blue-600 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg">
                     {t('home.cta.buttons.employer')}
                     <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
                 </Link>
-              ) : (
-                <Link href="/register?type=employer">
+              )}
+              {isAuthenticated && (user?.userType === 'admin' || user?.role === 'admin') && (
+                <Link href="/admin/dashboard">
                   <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-blue-600 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg">
-                    {t('home.cta.buttons.employer')}
+                    <LayoutDashboard className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
+                    관리자 대시보드
                     <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
                 </Link>

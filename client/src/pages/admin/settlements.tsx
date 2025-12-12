@@ -147,12 +147,18 @@ export default function AdminSettlements() {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">정산 관리</h1>
-            <p className="text-muted-foreground">플랫폼 정산 및 수수료 관리</p>
-          </div>
+      <div className="p-6">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            정산 관리
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            플랫폼 정산 및 수수료 관리
+          </p>
+        </div>
+        
+        <div className="flex justify-end mb-6">
           <div className="flex gap-2">
             <Button onClick={exportSettlements} variant="outline" className="gap-2">
               <Download className="h-4 w-4" />
@@ -285,7 +291,7 @@ export default function AdminSettlements() {
         </div>
 
         {/* 필터 */}
-        <Card>
+        <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5" />
@@ -342,7 +348,7 @@ export default function AdminSettlements() {
         </Card>
 
         {/* 정산 목록 */}
-        <Card>
+        <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
           <CardHeader>
             <CardTitle>정산 목록</CardTitle>
             <CardDescription>

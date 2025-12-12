@@ -22,9 +22,34 @@ import {
   Type,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CompanyBranding() {
   const { t } = useLanguage();
+  const { toast } = useToast();
+  
+  const handleSave = () => {
+    toast({
+      title: t("common.success") || "성공",
+      description: "브랜딩 설정이 저장되었습니다.",
+    });
+  };
+
+  const handlePreview = () => {
+    toast({
+      title: "미리보기",
+      description: "브랜딩 미리보기 페이지를 엽니다.",
+    });
+    // Open preview in new window or modal
+  };
+
+  const handleUpgrade = () => {
+    toast({
+      title: "프리미엄 업그레이드",
+      description: "프리미엄 요금제로 업그레이드합니다.",
+    });
+    // Navigate to pricing page
+  };
 
   return (
     <CompanyLayout>
@@ -44,11 +69,11 @@ export default function CompanyBranding() {
             <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
               {t('companyBranding.premiumFeature')}
             </Badge>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handlePreview}>
               <Eye className="h-4 w-4 mr-2" />
               {t('companyBranding.preview')}
             </Button>
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600" onClick={handleSave}>
               <Save className="h-4 w-4 mr-2" />
               {t('companyBranding.save')}
             </Button>
@@ -68,7 +93,7 @@ export default function CompanyBranding() {
                   {t('companyBranding.premiumBranding.description')}
                 </p>
               </div>
-              <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+              <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white" onClick={handleUpgrade}>
                 {t('companyBranding.premiumBranding.upgrade')}
               </Button>
             </div>

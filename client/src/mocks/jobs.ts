@@ -1,0 +1,98 @@
+/**
+ * Shared Mock Jobs Data
+ * 
+ * This is the single source of truth for job mock data.
+ * All pages (user, company, admin) should import from here.
+ */
+
+import type { Job } from "@/types/domain";
+
+// Base job data - matches domain.Job type
+export const mockJobs: Job[] = [
+  {
+    id: 1,
+    title: "Senior Frontend Developer",
+    companyId: 1,
+    companyName: "Tech Mongolia",
+    location: "Ulaanbaatar",
+    employmentType: "full_time",
+    experienceLevel: "senior",
+    salary: "2000-3000만원",
+    requiredSkills: ["React", "TypeScript", "CSS", "Next.js", "GraphQL"],
+    deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    description: "We are looking for an experienced frontend developer to join our team. You will be responsible for building modern, responsive web applications using React and TypeScript.",
+    status: "public",
+    isPremium: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    title: "Backend Developer",
+    companyId: 1,
+    companyName: "Tech Mongolia",
+    location: "Ulaanbaatar",
+    employmentType: "full_time",
+    experienceLevel: "mid",
+    salary: "1500-2500만원",
+    requiredSkills: ["Node.js", "PostgreSQL", "Docker", "AWS", "REST API"],
+    deadline: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+    description: "Join our backend team and help build scalable APIs and microservices. Experience with cloud infrastructure is a plus.",
+    status: "public",
+    isPremium: true,
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: 3,
+    title: "Full Stack Developer",
+    companyId: 2,
+    companyName: "Startup Hub",
+    location: "Ulaanbaatar",
+    employmentType: "full_time",
+    experienceLevel: "mid",
+    salary: "1800-2800만원",
+    requiredSkills: ["React", "Node.js", "MongoDB", "Express", "JavaScript"],
+    deadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
+    description: "We need a full stack developer who can work on both frontend and backend. You'll be working on exciting projects with a talented team.",
+    status: "public",
+    isPremium: false,
+    createdAt: new Date(Date.now() - 172800000).toISOString(),
+    updatedAt: new Date(Date.now() - 172800000).toISOString(),
+  },
+  {
+    id: 4,
+    title: "UI/UX Designer",
+    companyId: 1,
+    companyName: "Tech Mongolia",
+    location: "Ulaanbaatar",
+    employmentType: "full_time",
+    experienceLevel: "mid",
+    salary: "1200-2000만원",
+    requiredSkills: ["Figma", "Adobe XD", "Sketch", "Prototyping", "User Research"],
+    deadline: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString(),
+    description: "We're looking for a creative UI/UX designer to join our design team. You'll be creating beautiful and intuitive user interfaces.",
+    status: "pending",
+    isPremium: false,
+    createdAt: new Date(Date.now() - 259200000).toISOString(),
+    updatedAt: new Date(Date.now() - 259200000).toISOString(),
+  },
+  {
+    id: 5,
+    title: "DevOps Engineer",
+    companyId: 2,
+    companyName: "Startup Hub",
+    location: "Ulaanbaatar",
+    employmentType: "contract",
+    experienceLevel: "senior",
+    salary: "2500-3500만원",
+    requiredSkills: ["Kubernetes", "Docker", "AWS", "CI/CD", "Terraform"],
+    deadline: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+    description: "We need an experienced DevOps engineer to help us scale our infrastructure and improve our deployment pipeline.",
+    status: "public",
+    isPremium: true,
+    createdAt: new Date(Date.now() - 345600000).toISOString(),
+    updatedAt: new Date(Date.now() - 345600000).toISOString(),
+  },
+];
+

@@ -1,10 +1,41 @@
 import { Briefcase, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram, Heart, Sparkles } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/contexts/LanguageContext";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function Footer() {
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  
+  const handleNewsletterSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail || !newsletterEmail.includes("@")) {
+      toast({
+        title: "오류",
+        description: "유효한 이메일 주소를 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubscribing(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsSubscribing(false);
+    setNewsletterEmail("");
+    toast({
+      title: "구독 완료",
+      description: "뉴스레터 구독이 완료되었습니다.",
+    });
+  };
   
   return (
     <footer className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 text-white overflow-hidden">
@@ -81,66 +112,121 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">{t('footer.sections.services.title')}</h3>
             <ul className="space-y-3">
-              <li><Link href="/jobs" className="text-gray-300 hover:text-blue-400 transition-all duration-200 flex items-center group">
+              <li><Link href="/user/jobs" className="text-gray-300 hover:text-blue-400 transition-all duration-200 flex items-center group">
                 <span className="w-1 h-1 bg-blue-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
                 {t('footer.sections.services.jobs')}
               </Link></li>
-              <li><Link href="/companies" className="text-gray-300 hover:text-blue-400 transition-all duration-200 flex items-center group">
+              <li><Link href="/user/companies" className="text-gray-300 hover:text-blue-400 transition-all duration-200 flex items-center group">
                 <span className="w-1 h-1 bg-blue-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
                 {t('footer.sections.services.companies')}
               </Link></li>
-              <li><a href="#" className="text-gray-300 hover:text-blue-400 transition-all duration-200 flex items-center group">
-                <span className="w-1 h-1 bg-blue-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
-                {t('footer.sections.services.talents')}
-              </a></li>
-              <li><a href="#" className="text-gray-300 hover:text-blue-400 transition-all duration-200 flex items-center group">
-                <span className="w-1 h-1 bg-blue-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
-                {t('footer.sections.services.resume')}
-              </a></li>
+              <li>
+                {isAuthenticated && user?.userType === 'employer' ? (
+                  <Link href="/company/talents" className="text-gray-300 hover:text-blue-400 transition-all duration-200 flex items-center group">
+                    <span className="w-1 h-1 bg-blue-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                    {t('footer.sections.services.talents')}
+                  </Link>
+                ) : (
+                  <Link href="/user/jobs" className="text-gray-300 hover:text-blue-400 transition-all duration-200 flex items-center group">
+                    <span className="w-1 h-1 bg-blue-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                    {t('footer.sections.services.talents')}
+                  </Link>
+                )}
+              </li>
+              <li>
+                {isAuthenticated ? (
+                  <Link href="/user/resumes" className="text-gray-300 hover:text-blue-400 transition-all duration-200 flex items-center group">
+                    <span className="w-1 h-1 bg-blue-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                    {t('footer.sections.services.resume')}
+                  </Link>
+                ) : (
+                  <Link href="/register" className="text-gray-300 hover:text-blue-400 transition-all duration-200 flex items-center group">
+                    <span className="w-1 h-1 bg-blue-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                    {t('footer.sections.services.resume')}
+                  </Link>
+                )}
+              </li>
             </ul>
           </div>
           
           <div>
             <h3 className="text-lg font-semibold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">{t('footer.sections.business.title')}</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-300 hover:text-purple-400 transition-all duration-200 flex items-center group">
-                <span className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
-                {t('footer.sections.business.postJobs')}
-              </a></li>
-              <li><a href="#" className="text-gray-300 hover:text-purple-400 transition-all duration-200 flex items-center group">
-                <span className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
-                {t('footer.sections.business.searchTalents')}
-              </a></li>
-              <li><a href="#" className="text-gray-300 hover:text-purple-400 transition-all duration-200 flex items-center group">
-                <span className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
-                {t('footer.sections.business.companyPage')}
-              </a></li>
-              <li><a href="#" className="text-gray-300 hover:text-purple-400 transition-all duration-200 flex items-center group">
-                <span className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
-                {t('footer.sections.business.solutions')}
-              </a></li>
+              <li>
+                {isAuthenticated && user?.userType === 'employer' ? (
+                  <Link href="/company/jobs" className="text-gray-300 hover:text-purple-400 transition-all duration-200 flex items-center group">
+                    <span className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                    {t('footer.sections.business.postJobs')}
+                  </Link>
+                ) : (
+                  <Link href="/register?type=employer" className="text-gray-300 hover:text-purple-400 transition-all duration-200 flex items-center group">
+                    <span className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                    {t('footer.sections.business.postJobs')}
+                  </Link>
+                )}
+              </li>
+              <li>
+                {isAuthenticated && user?.userType === 'employer' ? (
+                  <Link href="/company/talents" className="text-gray-300 hover:text-purple-400 transition-all duration-200 flex items-center group">
+                    <span className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                    {t('footer.sections.business.searchTalents')}
+                  </Link>
+                ) : (
+                  <Link href="/register?type=employer" className="text-gray-300 hover:text-purple-400 transition-all duration-200 flex items-center group">
+                    <span className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                    {t('footer.sections.business.searchTalents')}
+                  </Link>
+                )}
+              </li>
+              <li>
+                {isAuthenticated && user?.userType === 'employer' ? (
+                  <Link href="/company/profile" className="text-gray-300 hover:text-purple-400 transition-all duration-200 flex items-center group">
+                    <span className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                    {t('footer.sections.business.companyPage')}
+                  </Link>
+                ) : (
+                  <Link href="/register?type=employer" className="text-gray-300 hover:text-purple-400 transition-all duration-200 flex items-center group">
+                    <span className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                    {t('footer.sections.business.companyPage')}
+                  </Link>
+                )}
+              </li>
+              <li>
+                <Link href="/pricing" className="text-gray-300 hover:text-purple-400 transition-all duration-200 flex items-center group">
+                  <span className="w-1 h-1 bg-purple-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                  {t('footer.sections.business.solutions')}
+                </Link>
+              </li>
             </ul>
           </div>
           
           <div>
             <h3 className="text-lg font-semibold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">{t('footer.sections.support.title')}</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
-                <span className="w-1 h-1 bg-amber-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
-                {t('footer.sections.support.notices')}
-              </a></li>
-              <li><a href="#" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
-                <span className="w-1 h-1 bg-amber-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
-                {t('footer.sections.support.faq')}
-              </a></li>
-              <li><a href="#" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
-                <span className="w-1 h-1 bg-amber-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
-                {t('footer.sections.support.customerService')}
-              </a></li>
-              <li><a href="#" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
-                <span className="w-1 h-1 bg-amber-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
-                {t('footer.sections.support.terms')}
-              </a></li>
+              <li>
+                <Link href="/user/feed" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
+                  <span className="w-1 h-1 bg-amber-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                  {t('footer.sections.support.notices')}
+                </Link>
+              </li>
+              <li>
+                <Link href="/user/career" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
+                  <span className="w-1 h-1 bg-amber-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                  {t('footer.sections.support.faq')}
+                </Link>
+              </li>
+              <li>
+                <a href="mailto:contact@workmongolia.mn" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
+                  <span className="w-1 h-1 bg-amber-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                  {t('footer.sections.support.customerService')}
+                </a>
+              </li>
+              <li>
+                <Link href="/pricing" className="text-gray-300 hover:text-amber-400 transition-all duration-200 flex items-center group">
+                  <span className="w-1 h-1 bg-amber-400 rounded-full mr-3 group-hover:w-2 transition-all duration-200"></span>
+                  {t('footer.sections.support.terms')}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -154,16 +240,24 @@ export default function Footer() {
             <p className="text-gray-300 mb-6">
               {t('footer.newsletter.subtitle')}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input
+            <form onSubmit={handleNewsletterSubscribe} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <Input
                 type="email"
                 placeholder={t('footer.newsletter.placeholder')}
-                className="flex-1 px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                className="flex-1 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+                disabled={isSubscribing}
+                required
               />
-              <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 hover:shadow-lg">
-                {t('footer.newsletter.subscribe')}
-              </button>
-            </div>
+              <Button 
+                type="submit"
+                disabled={isSubscribing}
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 hover:shadow-lg"
+              >
+                {isSubscribing ? "구독 중..." : t('footer.newsletter.subscribe')}
+              </Button>
+            </form>
           </div>
         </div>
         
@@ -176,9 +270,9 @@ export default function Footer() {
               <span className="text-sm">{t('footer.bottom.madeWith')}</span>
             </div>
             <div className="flex space-x-6 text-sm">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">{t('footer.bottom.privacy')}</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">{t('footer.bottom.terms')}</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">{t('footer.bottom.cookies')}</a>
+              <Link href="/pricing" className="text-gray-400 hover:text-white transition-colors">{t('footer.bottom.privacy')}</Link>
+              <Link href="/pricing" className="text-gray-400 hover:text-white transition-colors">{t('footer.bottom.terms')}</Link>
+              <Link href="/pricing" className="text-gray-400 hover:text-white transition-colors">{t('footer.bottom.cookies')}</Link>
             </div>
           </div>
         </div>

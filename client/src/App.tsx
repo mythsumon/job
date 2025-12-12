@@ -17,6 +17,8 @@ import UserSettings from "@/pages/user/settings";
 import UserResumes from "@/pages/user/resumes";
 import UserApplications from "@/pages/user/applications";
 import SavedJobs from "@/pages/user/saved-jobs";
+import UserNotifications from "@/pages/user/notifications";
+import UserHome from "@/pages/user/home";
 import { ProtectedPage } from "@/components/common/ProtectedPage";
 import { AuthGuard } from "@/components/common/AuthGuard";
 import { RoleGuard } from "@/components/common/RoleGuard";
@@ -29,6 +31,15 @@ import AdminSettlements from "@/pages/admin/settlements";
 import AdminAnalytics from "@/pages/admin/analytics";
 import AdminSettings from "@/pages/admin/settings";
 import AdminBanners from "@/pages/admin/banners";
+import AdminJobOptions from "@/pages/admin/job-options";
+import AdminChat from "@/pages/admin/chat";
+import AdminCommunity from "@/pages/admin/community";
+import AdminCompanyDetail from "@/pages/admin/company-detail";
+import AdminPreferredIndustries from "@/pages/admin/preferred-industries";
+import AdminCareer from "@/pages/admin/career";
+import AdminJobs from "@/pages/admin/jobs";
+import AdminSkills from "@/pages/admin/skills";
+import AdminReports from "@/pages/admin/reports";
 
 import CompanyDashboard from "@/pages/company/dashboard";
 import CompanyApplications from "@/pages/company/applications";
@@ -44,8 +55,9 @@ import CompanyTalents from "@/pages/company/talents";
 import CompanyChat from "@/pages/company/chat";
 import CompanyProfile from "@/pages/company/profile";
 import CompanyInfo from "@/pages/company/info";
+import CompanyNotifications from "@/pages/company/notifications";
+import Pricing from "@/pages/pricing";
 import NotFound from "@/pages/not-found";
-import { LanguageProvider } from "@/contexts/LanguageContext";
 
 // Scroll restoration component
 function ScrollToTop() {
@@ -58,19 +70,54 @@ function ScrollToTop() {
   return null;
 }
 
+// Clean up old mock tokens on app initialization
+function AppInitializer() {
+  useEffect(() => {
+    // Remove old auto-generated mock tokens that were created before the fix
+    const token = localStorage.getItem('auth_token');
+    if (token === 'mock-token-123') {
+      // This is an old auto-generated token, check if user actually logged in
+      const userData = localStorage.getItem('user_data');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          // Only keep if it's from a real login (not auto-generated)
+          // Since we can't distinguish, we'll clear it to be safe
+          // User will need to log in again if they want
+          console.log('[APP] Clearing old auto-generated mock token');
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user_data');
+        } catch (e) {
+          // Invalid user data, clear everything
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user_data');
+        }
+      }
+    }
+  }, []);
+
+  return null;
+}
+
 function Router() {
   return (
     <>
       <ScrollToTop />
+      <AppInitializer />
       <Switch>
         {/* Landing/Public Routes - Anyone can access */}
         <Route path="/" component={Home} />
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
+        <Route path="/pricing" component={Pricing} />
         
         {/* User Routes - All users can access (both logged in and guests) */}
         <Route path="/user" component={() => { window.location.href = "/user/home"; return null; }} />
-        <Route path="/user/home" component={Home} />
+        <Route path="/user/home" component={() => 
+          <RoleGuard allowedUserTypes={['candidate']}>
+            <ProtectedPage><UserHome /></ProtectedPage>
+          </RoleGuard>
+        } />
         <Route path="/user/jobs" component={Jobs} />
         <Route path="/user/jobs/:id" component={JobDetail} />
         <Route path="/user/companies" component={Companies} />
@@ -107,6 +154,11 @@ function Router() {
         <Route path="/user/saved-jobs" component={() => 
           <RoleGuard allowedUserTypes={['candidate']}>
             <ProtectedPage><SavedJobs /></ProtectedPage>
+          </RoleGuard>
+        } />
+        <Route path="/user/notifications" component={() => 
+          <RoleGuard allowedUserTypes={['candidate', 'employer', 'admin']}>
+            <ProtectedPage><UserNotifications /></ProtectedPage>
           </RoleGuard>
         } />
         
@@ -172,14 +224,18 @@ function Router() {
             <ProtectedPage><CompanySettings /></ProtectedPage>
           </RoleGuard>
         } />
-        <Route path="/company/profile" component={() => 
-          <RoleGuard allowedUserTypes={['employer']}>
-            <ProtectedPage><CompanyProfile /></ProtectedPage>
-          </RoleGuard>
-        } />
+        <Route path="/company/profile" component={() => {
+          window.location.href = "/company/info";
+          return null;
+        }} />
         <Route path="/company/info" component={() => 
           <RoleGuard allowedUserTypes={['employer']}>
             <ProtectedPage><CompanyInfo /></ProtectedPage>
+          </RoleGuard>
+        } />
+        <Route path="/company/notifications" component={() => 
+          <RoleGuard allowedUserTypes={['employer']}>
+            <CompanyNotifications />
           </RoleGuard>
         } />
         
@@ -198,6 +254,21 @@ function Router() {
         <Route path="/admin/companies" component={() => 
           <RoleGuard allowedUserTypes={['admin']}>
             <AdminCompanies />
+          </RoleGuard>
+        } />
+        <Route path="/admin/companies/:id" component={() => 
+          <RoleGuard allowedUserTypes={['admin']}>
+            <AdminCompanyDetail />
+          </RoleGuard>
+        } />
+        <Route path="/admin/jobs" component={() => 
+          <RoleGuard allowedUserTypes={['admin']}>
+            <AdminJobs />
+          </RoleGuard>
+        } />
+        <Route path="/admin/reports" component={() => 
+          <RoleGuard allowedUserTypes={['admin']}>
+            <AdminReports />
           </RoleGuard>
         } />
         <Route path="/admin/roles" component={() => 
@@ -230,6 +301,36 @@ function Router() {
             <AdminBanners />
           </RoleGuard>
         } />
+        <Route path="/admin/job-options" component={() => 
+          <RoleGuard allowedUserTypes={['admin']}>
+            <AdminJobOptions />
+          </RoleGuard>
+        } />
+        <Route path="/admin/preferred-industries" component={() => 
+          <RoleGuard allowedUserTypes={['admin']}>
+            <AdminPreferredIndustries />
+          </RoleGuard>
+        } />
+        <Route path="/admin/career" component={() => 
+          <RoleGuard allowedUserTypes={['admin']}>
+            <AdminCareer />
+          </RoleGuard>
+        } />
+        <Route path="/admin/skills" component={() => 
+          <RoleGuard allowedUserTypes={['admin']}>
+            <AdminSkills />
+          </RoleGuard>
+        } />
+        <Route path="/admin/chat" component={() => 
+          <RoleGuard allowedUserTypes={['admin']}>
+            <AdminChat />
+          </RoleGuard>
+        } />
+        <Route path="/admin/community" component={() => 
+          <RoleGuard allowedUserTypes={['admin']}>
+            <AdminCommunity />
+          </RoleGuard>
+        } />
         
         {/* Legacy redirects for backward compatibility */}
         <Route path="/jobs" component={() => { window.location.href = "/user/jobs"; return null; }} />
@@ -250,12 +351,10 @@ function Router() {
 
 function App() {
   return (
-    <LanguageProvider>
-      <div className="min-h-screen bg-background">
-        <Router />
-        <BottomNavigation />
-      </div>
-    </LanguageProvider>
+    <div className="min-h-screen bg-background">
+      <Router />
+      <BottomNavigation />
+    </div>
   );
 }
 

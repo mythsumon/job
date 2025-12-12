@@ -31,8 +31,16 @@ export function useAuth() {
   const { data: user, isLoading, error } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: async (): Promise<User | null> => {
+      const currentToken = AuthManager.getToken();
+      
+      // If no token, return null immediately
+      if (!currentToken) {
+        console.log('[AUTH] No token found, returning null');
+        return null;
+      }
+      
       console.log('[AUTH] Starting authentication check');
-      console.log('[AUTH] Token exists:', !!token);
+      console.log('[AUTH] Token exists:', !!currentToken);
       console.log('[AUTH] Token valid:', AuthManager.isTokenValid());
       
       // MOCK MODE: Skip token validation
@@ -84,15 +92,24 @@ export function useAuth() {
       }
     },
     retry: false,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, // Always refetch to ensure fresh state
     enabled: true, // Always enabled in mock mode
   });
 
   // Check localStorage on mount for immediate user state
   useEffect(() => {
     const storedUser = localStorage.getItem("user_data");
+    const currentToken = AuthManager.getToken();
     
-    if (storedUser && !user && !isLoading && token) {
+    // If there's user data but no token, clear the stale user data
+    if (storedUser && !currentToken) {
+      console.log('[AUTH] Found stale user data without token, clearing...');
+      localStorage.removeItem("user_data");
+      queryClient.setQueryData(["/api/auth/user"], null);
+      return;
+    }
+    
+    if (storedUser && !user && !isLoading && currentToken) {
       try {
         const parsedUser = JSON.parse(storedUser);
         // Normalize stored user data as well
@@ -114,14 +131,109 @@ export function useAuth() {
   }, [user, isLoading, queryClient, token]);
 
   const logout = async () => {
-    await AuthManager.logout();
-    queryClient.setQueryData(["/api/auth/user"], null);
-    queryClient.invalidateQueries();
-    queryClient.clear(); // Clear all query cache
-    // Small delay to ensure state is cleared before redirect
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 100);
+    try {
+      console.log('[AUTH] Starting logout process');
+      
+      // Clear auth data first
+      AuthManager.clearAuth();
+      
+      // Clear all query cache and reset immediately
+      queryClient.setQueryData(["/api/auth/user"], null);
+      queryClient.removeQueries();
+      queryClient.resetQueries();
+      queryClient.clear();
+      
+      // Cancel any ongoing queries
+      queryClient.cancelQueries();
+      
+      // Auto-login as John Doe (job seeker) after logout
+      const johnDoe = {
+        id: 1,
+        email: "wizar.temuujin1@gmail.com",
+        fullName: "John Doe",
+        full_name: "John Doe",
+        userType: "candidate",
+        user_type: "candidate",
+        profilePicture: null,
+        profile_picture: null,
+        location: "Ulaanbaatar",
+        bio: "Experienced software developer with 5 years of React and TypeScript experience. Passionate about building scalable web applications.",
+        skills: ["React", "TypeScript", "Node.js", "Next.js", "GraphQL"],
+        experience: "5년",
+        education: "KAIST 컴퓨터공학과",
+        major: "Computer Science",
+        preferredIndustry: ["Technology", "Software"],
+        dreamCompany: "네이버",
+        careerLevel: "senior",
+        salaryExpectation: "6000-8000만원",
+        workAvailability: "immediate",
+        isActive: true,
+        is_active: true,
+        username: "johndoe",
+        role: "user",
+        created_at: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Set token and user data for John Doe
+      AuthManager.setToken("mock-token-john-doe");
+      localStorage.setItem("user_data", JSON.stringify(johnDoe));
+      localStorage.setItem("auth_token", "mock-token-john-doe");
+      
+      // Update query cache with John Doe
+      queryClient.setQueryData(["/api/auth/user"], johnDoe);
+      
+      console.log('[AUTH] Logout complete, auto-logged in as John Doe (job seeker)');
+      
+      // Force redirect to home page
+      // Use replace instead of href to prevent back button issues
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        window.location.replace("/");
+      }, 100);
+    } catch (error) {
+      console.error('[AUTH] Logout error:', error);
+      // Even if there's an error, try to auto-login as John Doe
+      try {
+        const johnDoe = {
+          id: 1,
+          email: "wizar.temuujin1@gmail.com",
+          fullName: "John Doe",
+          full_name: "John Doe",
+          userType: "candidate",
+          user_type: "candidate",
+          profilePicture: null,
+          profile_picture: null,
+          location: "Ulaanbaatar",
+          bio: "Experienced software developer with 5 years of React and TypeScript experience. Passionate about building scalable web applications.",
+          skills: ["React", "TypeScript", "Node.js", "Next.js", "GraphQL"],
+          experience: "5년",
+          education: "KAIST 컴퓨터공학과",
+          major: "Computer Science",
+          preferredIndustry: ["Technology", "Software"],
+          dreamCompany: "네이버",
+          careerLevel: "senior",
+          salaryExpectation: "6000-8000만원",
+          workAvailability: "immediate",
+          isActive: true,
+          is_active: true,
+          username: "johndoe",
+          role: "user",
+          created_at: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+        };
+        
+        AuthManager.setToken("mock-token-john-doe");
+        localStorage.setItem("user_data", JSON.stringify(johnDoe));
+        localStorage.setItem("auth_token", "mock-token-john-doe");
+        queryClient.setQueryData(["/api/auth/user"], johnDoe);
+      } catch (autoLoginError) {
+        console.error('[AUTH] Auto-login error:', autoLoginError);
+      }
+      setTimeout(() => {
+        window.location.replace("/");
+      }, 100);
+    }
   };
 
   return {

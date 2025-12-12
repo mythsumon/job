@@ -56,10 +56,14 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import ResumeManagement from "@/components/resume/ResumeManagement";
+import { Link, useLocation } from "wouter";
+import { ArrowRight, ArrowLeft } from "lucide-react";
+import { apiGet } from "@/lib/queryClient";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ProfilePictureUpload } from "@/components/ProfilePictureUpload";
+import { PREFERRED_INDUSTRIES } from "@/lib/types";
 
 const profileUpdateSchema = z.object({
     fullName: z.string().min(2, "이름은 최소 2자 이상이어야 합니다"),
@@ -105,10 +109,27 @@ interface UserSubscription {
     price: number;
 }
 
+const getTimeAgo = (date: string | Date) => {
+    if (!date) return '알 수 없음';
+    const now = new Date();
+    const postDate = typeof date === 'string' ? new Date(date) : date;
+    const diffInMs = now.getTime() - postDate.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    
+    if (diffInMinutes < 1) return '방금 전';
+    if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+    if (diffInHours < 24) return `${diffInHours}시간 전`;
+    if (diffInDays < 7) return `${diffInDays}일 전`;
+    return typeof date === 'string' ? new Date(date).toLocaleDateString('ko-KR') : date.toLocaleDateString('ko-KR');
+};
+
 export default function UserProfile() {
     const { user } = useAuth();
     const { toast } = useToast();
     const queryClient = useQueryClient();
+    const [, setLocation] = useLocation();
     const [isEditing, setIsEditing] = useState(false);
     const [activeTab, setActiveTab] = useState("resumes");
 
@@ -123,6 +144,38 @@ export default function UserProfile() {
         queryKey: ["/api/users/subscription"],
         enabled: !!user,
     });
+
+    // Fetch activity data
+    const { data: resumes } = useQuery({
+        queryKey: ["/api/resumes"],
+        enabled: !!user,
+    });
+
+    const { data: applications } = useQuery({
+        queryKey: ["/api/applications/user", user?.id],
+        queryFn: async () => {
+            if (!user?.id) return [];
+            return await apiGet(`/api/applications/user/${user.id}`);
+        },
+        enabled: !!user?.id,
+    });
+
+    const { data: savedJobs } = useQuery({
+        queryKey: ["/api/saved-jobs", user?.id],
+        queryFn: async () => {
+            if (!user?.id) return [];
+            return await apiGet(`/api/saved-jobs?userId=${user.id}`);
+        },
+        enabled: !!user?.id,
+    });
+
+    // Calculate activity stats
+    const activityStats = {
+        resumeCount: Array.isArray(resumes) ? resumes.length : 0,
+        applicationCount: Array.isArray(applications) ? applications.length : 0,
+        profileViews: 0, // TODO: Implement profile view tracking
+        savedJobsCount: Array.isArray(savedJobs) ? savedJobs.length : 0,
+    };
 
     const form = useForm<ProfileUpdateForm>({
         resolver: zodResolver(profileUpdateSchema),
@@ -230,6 +283,18 @@ export default function UserProfile() {
             <Header />
             <main className="container mx-auto px-4 py-8">
                 <div className="max-w-6xl mx-auto">
+                    {/* Back Button */}
+                    <div className="mb-4">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setLocation("/user/home")}
+                            className="flex items-center gap-2"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            뒤로가기
+                        </Button>
+                    </div>
                     {/* Profile Header */}
                     <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -254,11 +319,23 @@ export default function UserProfile() {
                                     }}
                                 />
                                 <div>
-                                    <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                                        {profile?.fullName ||
-                                            user?.fullName ||
-                                            user?.username}
-                                    </h1>
+                                    <div className="flex items-center gap-3 mb-1">
+                                        <h1 className="text-2xl font-bold text-gray-900">
+                                            {profile?.fullName ||
+                                                user?.fullName ||
+                                                user?.username}
+                                        </h1>
+                                        <Link href="/user/home">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
+                                            >
+                                                <User className="w-4 h-4" />
+                                                홈으로
+                                            </Button>
+                                        </Link>
+                                    </div>
                                     <p className="text-gray-600 mb-2">
                                         {user?.userType === "candidate"
                                             ? "구직자"
@@ -487,26 +564,7 @@ export default function UserProfile() {
                                                         </FormLabel>
                                                         <FormControl>
                                                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-                                                                {[
-                                                                    "IT/소프트웨어",
-                                                                    "게임",
-                                                                    "핀테크",
-                                                                    "이커머스",
-                                                                    "스타트업",
-                                                                    "대기업",
-                                                                    "금융/은행",
-                                                                    "제조업",
-                                                                    "의료/헬스케어",
-                                                                    "교육",
-                                                                    "미디어/엔터테인먼트",
-                                                                    "컨설팅",
-                                                                    "마케팅/광고",
-                                                                    "디자인",
-                                                                    "물류/유통",
-                                                                    "건설/부동산",
-                                                                    "에너지",
-                                                                    "공공기관",
-                                                                ].map(
+                                                                {PREFERRED_INDUSTRIES.map(
                                                                     (
                                                                         industry
                                                                     ) => (
@@ -744,10 +802,12 @@ export default function UserProfile() {
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                                                        <Award className="w-4 h-4 mr-2" />
-                                                        프리미엄으로 업그레이드
-                                                    </Button>
+                                                    <Link href="/pricing">
+                                                        <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                                                            <Award className="w-4 h-4 mr-2" />
+                                                            프리미엄으로 업그레이드
+                                                        </Button>
+                                                    </Link>
                                                 </CardContent>
                                             </Card>
                                         </div>
@@ -838,7 +898,7 @@ export default function UserProfile() {
                                                 <CardContent className="p-4 text-center">
                                                     <FileText className="w-8 h-8 text-blue-500 mx-auto mb-2" />
                                                     <div className="text-2xl font-bold text-blue-600">
-                                                        3
+                                                        {activityStats.resumeCount}
                                                     </div>
                                                     <div className="text-sm text-gray-600">
                                                         이력서 생성
@@ -849,7 +909,7 @@ export default function UserProfile() {
                                                 <CardContent className="p-4 text-center">
                                                     <Search className="w-8 h-8 text-green-500 mx-auto mb-2" />
                                                     <div className="text-2xl font-bold text-green-600">
-                                                        12
+                                                        {activityStats.applicationCount}
                                                     </div>
                                                     <div className="text-sm text-gray-600">
                                                         지원한 공고
@@ -860,7 +920,7 @@ export default function UserProfile() {
                                                 <CardContent className="p-4 text-center">
                                                     <Eye className="w-8 h-8 text-purple-500 mx-auto mb-2" />
                                                     <div className="text-2xl font-bold text-purple-600">
-                                                        45
+                                                        {activityStats.profileViews}
                                                     </div>
                                                     <div className="text-sm text-gray-600">
                                                         프로필 조회
@@ -871,7 +931,7 @@ export default function UserProfile() {
                                                 <CardContent className="p-4 text-center">
                                                     <Target className="w-8 h-8 text-orange-500 mx-auto mb-2" />
                                                     <div className="text-2xl font-bold text-orange-600">
-                                                        8
+                                                        {activityStats.savedJobsCount}
                                                     </div>
                                                     <div className="text-sm text-gray-600">
                                                         관심 공고
@@ -889,60 +949,111 @@ export default function UserProfile() {
                                                 </CardTitle>
                                             </CardHeader>
                                             <CardContent>
-                                                <div className="space-y-4">
-                                                    <div className="flex items-start gap-4 pb-4 border-b border-gray-100">
-                                                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                                            <FileText className="w-4 h-4 text-blue-600" />
+                                                {(() => {
+                                                    const activities: Array<{
+                                                        type: 'resume' | 'application' | 'profile';
+                                                        title: string;
+                                                        description: string;
+                                                        time: string;
+                                                        icon: React.ReactNode;
+                                                        color: string;
+                                                    }> = [];
+
+                                                    // Add resume activities
+                                                    if (Array.isArray(resumes) && resumes.length > 0) {
+                                                        const latestResume = resumes.sort((a: any, b: any) => 
+                                                            new Date(b.updatedAt || b.createdAt || 0).getTime() - 
+                                                            new Date(a.updatedAt || a.createdAt || 0).getTime()
+                                                        )[0];
+                                                        if (latestResume) {
+                                                            const timeAgo = getTimeAgo(latestResume.updatedAt || latestResume.createdAt || '');
+                                                            activities.push({
+                                                                type: 'resume',
+                                                                title: '새 이력서를 생성했습니다',
+                                                                description: latestResume.title || '이력서',
+                                                                time: timeAgo,
+                                                                icon: <FileText className="w-4 h-4 text-blue-600" />,
+                                                                color: 'bg-blue-100',
+                                                            });
+                                                        }
+                                                    }
+
+                                                    // Add application activities
+                                                    if (Array.isArray(applications) && applications.length > 0) {
+                                                        const latestApp = applications.sort((a: any, b: any) => 
+                                                            new Date(b.appliedAt || 0).getTime() - 
+                                                            new Date(a.appliedAt || 0).getTime()
+                                                        )[0];
+                                                        if (latestApp) {
+                                                            const timeAgo = getTimeAgo(latestApp.appliedAt || '');
+                                                            activities.push({
+                                                                type: 'application',
+                                                                title: '채용공고에 지원했습니다',
+                                                                description: latestApp.job?.title || '채용공고',
+                                                                time: timeAgo,
+                                                                icon: <Search className="w-4 h-4 text-green-600" />,
+                                                                color: 'bg-green-100',
+                                                            });
+                                                        }
+                                                    }
+
+                                                    // Add profile update activity
+                                                    if (profile?.updatedAt) {
+                                                        const timeAgo = getTimeAgo(profile.updatedAt);
+                                                        activities.push({
+                                                            type: 'profile',
+                                                            title: '프로필을 업데이트했습니다',
+                                                            description: '프로필 정보 수정',
+                                                            time: timeAgo,
+                                                            icon: <Edit className="w-4 h-4 text-purple-600" />,
+                                                            color: 'bg-purple-100',
+                                                        });
+                                                    }
+
+                                                    // Sort by time (most recent first) - simple sort
+                                                    activities.sort((a, b) => {
+                                                        // Simple comparison - if time contains numbers, extract and compare
+                                                        const getTimeValue = (timeStr: string) => {
+                                                            if (timeStr.includes('분')) return parseInt(timeStr) || 0;
+                                                            if (timeStr.includes('시간')) return (parseInt(timeStr) || 0) * 60;
+                                                            if (timeStr.includes('일')) return (parseInt(timeStr) || 0) * 24 * 60;
+                                                            return 999999; // For dates, put them last
+                                                        };
+                                                        return getTimeValue(a.time) - getTimeValue(b.time);
+                                                    });
+
+                                                    if (activities.length === 0) {
+                                                        return (
+                                                            <div className="text-center py-8">
+                                                                <Activity className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                                                                <p className="text-muted-foreground">최근 활동 내역이 없습니다.</p>
+                                                            </div>
+                                                        );
+                                                    }
+
+                                                    return (
+                                                        <div className="space-y-4">
+                                                            {activities.slice(0, 5).map((activity, index) => (
+                                                                <div key={index} className="flex items-start gap-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                                                                    <div className={`w-8 h-8 ${activity.color} rounded-full flex items-center justify-center flex-shrink-0`}>
+                                                                        {activity.icon}
+                                                                    </div>
+                                                                    <div className="flex-1">
+                                                                        <div className="font-medium">
+                                                                            {activity.title}
+                                                                        </div>
+                                                                        <div className="text-sm text-gray-600">
+                                                                            {activity.description}
+                                                                        </div>
+                                                                        <div className="text-xs text-gray-500 mt-1">
+                                                                            {activity.time}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                        <div className="flex-1">
-                                                            <div className="font-medium">
-                                                                새 이력서를
-                                                                생성했습니다
-                                                            </div>
-                                                            <div className="text-sm text-gray-600">
-                                                                내 이력서001
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 mt-1">
-                                                                2시간 전
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-start gap-4 pb-4 border-b border-gray-100">
-                                                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                                            <Search className="w-4 h-4 text-green-600" />
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <div className="font-medium">
-                                                                채용공고에
-                                                                지원했습니다
-                                                            </div>
-                                                            <div className="text-sm text-gray-600">
-                                                                DevOps 엔지니어
-                                                                - 카카오
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 mt-1">
-                                                                1일 전
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-start gap-4 pb-4 border-b border-gray-100">
-                                                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                                            <Edit className="w-4 h-4 text-purple-600" />
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <div className="font-medium">
-                                                                프로필을
-                                                                업데이트했습니다
-                                                            </div>
-                                                            <div className="text-sm text-gray-600">
-                                                                경력 사항 추가
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 mt-1">
-                                                                3일 전
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                    );
+                                                })()}
                                             </CardContent>
                                         </Card>
                                     </div>
@@ -990,13 +1101,15 @@ export default function UserProfile() {
                                                             있습니다
                                                         </div>
                                                     </div>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                    >
-                                                        <Eye className="w-4 h-4 mr-2" />
-                                                        공개
-                                                    </Button>
+                                                    <Link href="/user/settings">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                        >
+                                                            <Eye className="w-4 h-4 mr-2" />
+                                                            공개
+                                                        </Button>
+                                                    </Link>
                                                 </div>
                                                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                                     <div>
@@ -1009,13 +1122,15 @@ export default function UserProfile() {
                                                             있습니다
                                                         </div>
                                                     </div>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                    >
-                                                        <Eye className="w-4 h-4 mr-2" />
-                                                        제한적 공개
-                                                    </Button>
+                                                    <Link href="/user/resumes">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                        >
+                                                            <Eye className="w-4 h-4 mr-2" />
+                                                            제한적 공개
+                                                        </Button>
+                                                    </Link>
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -1040,12 +1155,14 @@ export default function UserProfile() {
                                                             받아보세요
                                                         </div>
                                                     </div>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                    >
-                                                        활성화됨
-                                                    </Button>
+                                                    <Link href="/user/settings">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                        >
+                                                            활성화됨
+                                                        </Button>
+                                                    </Link>
                                                 </div>
                                                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                                     <div>
@@ -1057,12 +1174,14 @@ export default function UserProfile() {
                                                             받아보세요
                                                         </div>
                                                     </div>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                    >
-                                                        활성화됨
-                                                    </Button>
+                                                    <Link href="/user/settings">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                        >
+                                                            활성화됨
+                                                        </Button>
+                                                    </Link>
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -1087,13 +1206,15 @@ export default function UserProfile() {
                                                             보안을 강화하세요
                                                         </div>
                                                     </div>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                    >
-                                                        <Edit className="w-4 h-4 mr-2" />
-                                                        변경
-                                                    </Button>
+                                                    <Link href="/user/settings">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                        >
+                                                            <Edit className="w-4 h-4 mr-2" />
+                                                            변경
+                                                        </Button>
+                                                    </Link>
                                                 </div>
                                                 <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
                                                     <div>
@@ -1106,13 +1227,15 @@ export default function UserProfile() {
                                                             삭제됩니다
                                                         </div>
                                                     </div>
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                    >
-                                                        <Trash2 className="w-4 h-4 mr-2" />
-                                                        삭제
-                                                    </Button>
+                                                    <Link href="/user/settings">
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                        >
+                                                            <Trash2 className="w-4 h-4 mr-2" />
+                                                            삭제
+                                                        </Button>
+                                                    </Link>
                                                 </div>
                                             </CardContent>
                                         </Card>

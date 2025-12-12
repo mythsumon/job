@@ -37,6 +37,8 @@ import {
   ArrowDownRight,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const performanceData = [
   { month: "1월", applications: 85, hires: 6, views: 2400 },
@@ -114,6 +116,29 @@ const kpiData = [
 
 export default function CompanyAnalytics() {
   const { t } = useLanguage();
+  const { toast } = useToast();
+  const [selectedPeriod, setSelectedPeriod] = useState("30days");
+
+  const handleDownloadReport = () => {
+    // Create a mock CSV report
+    const csvContent = `Period,Applications,Hires,Views
+${selectedPeriod},287,22,8500`;
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `analytics-report-${selectedPeriod}-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: t("common.success") || "성공",
+      description: "리포트가 다운로드되었습니다.",
+    });
+  };
 
   return (
     <CompanyLayout>
@@ -127,7 +152,7 @@ export default function CompanyAnalytics() {
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <Select>
+            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder={t('companyAnalytics.selectPeriod')} />
               </SelectTrigger>
@@ -138,7 +163,7 @@ export default function CompanyAnalytics() {
                 <SelectItem value="1year">{t('companyAnalytics.periods.lastYear')}</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleDownloadReport}>
               <Download className="h-4 w-4 mr-2" />
               {t('companyAnalytics.downloadReport')}
             </Button>

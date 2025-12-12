@@ -15,11 +15,17 @@ export class AuthManager {
 
   // Remove token and user data
   static clearAuth(): void {
+    // Remove all possible auth-related keys
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
     localStorage.removeItem('token');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userData');
+    // Clear sessionStorage as well
+    sessionStorage.clear();
     console.log('[AUTH] All auth data cleared');
   }
 
@@ -71,10 +77,37 @@ export class AuthManager {
     
     if (MOCK_MODE) {
       console.log('[MOCK AUTH] authenticatedRequest:', url);
+      
+      // Check for token first - if no token, return 401 error
+      const token = this.getToken();
+      if (!token) {
+        console.log('[MOCK AUTH] No token found, returning 401');
+        return {
+          ok: false,
+          status: 401,
+          statusText: 'Unauthorized',
+          json: async () => ({ error: 'Authentication required' }),
+          text: async () => JSON.stringify({ error: 'Authentication required' }),
+        } as Response;
+      }
+      
       const { getMockData, mockDelay } = await import('@/lib/mockData');
       await mockDelay(100);
       
       const mockData = getMockData(url);
+      
+      // If mockData is null (no user found), return 401
+      if (mockData === null && url.includes('/auth/user')) {
+        console.log('[MOCK AUTH] No user data found, returning 401');
+        return {
+          ok: false,
+          status: 401,
+          statusText: 'Unauthorized',
+          json: async () => ({ error: 'Authentication required' }),
+          text: async () => JSON.stringify({ error: 'Authentication required' }),
+        } as Response;
+      }
+      
       return {
         ok: true,
         status: 200,

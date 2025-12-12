@@ -5,6 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { 
   Users, 
   Building2, 
@@ -16,13 +24,34 @@ import {
   AlertCircle,
   BarChart3,
   PieChart,
-  Calendar
+  Calendar,
+  Plus,
+  ArrowRight,
+  ExternalLink,
+  User
 } from "lucide-react";
+import { Link, useLocation } from "wouter";
 import { CareerSection } from "@/components/career/career-section";
 import { FeedSection } from "@/components/feed/feed-section";
+import { JobCreateForm } from "@/components/jobs/JobCreateForm";
+import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { Globe } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function AdminDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState("7d");
+  const [isCreateJobDialogOpen, setIsCreateJobDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const { t, language, setLanguage } = useLanguage();
+  const [, setLocation] = useLocation();
+  const { user } = useAuth();
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/admin/stats", selectedPeriod],
@@ -72,12 +101,50 @@ export default function AdminDashboard() {
       <div className="p-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            관리자 대시보드
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            WorkMongolia 플랫폼 운영 현황을 한눈에 확인하세요
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                관리자 대시보드
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                WorkMongolia 플랫폼 운영 현황을 한눈에 확인하세요
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Globe className="h-4 w-4 mr-2" />
+                    {language === "ko" ? "한국어" : language === "en" ? "English" : "Монгол"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setLanguage("ko")}>
+                    한국어
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLanguage("en")}>
+                    English
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setLanguage("mn")}>
+                    Монгол
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Link href="/user/jobs" target="_blank">
+                <Button variant="outline" size="sm">
+                  <Briefcase className="h-4 w-4 mr-2" />
+                  채용공고 보기
+                  <ExternalLink className="h-3 w-3 ml-2" />
+                </Button>
+              </Link>
+              <Link href="/" target="_blank">
+                <Button variant="outline" size="sm">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  웹사이트 보기
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* Period Selector */}
@@ -105,8 +172,23 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {statsCards.map((stat) => {
             const Icon = stat.icon;
+            const handleCardClick = () => {
+              if (stat.title === "총 사용자") {
+                setLocation("/admin/users");
+              } else if (stat.title === "등록된 기업") {
+                setLocation("/admin/companies");
+              } else if (stat.title === "활성 채용공고") {
+                setLocation("/user/jobs");
+              } else if (stat.title === "월 매출") {
+                setLocation("/admin/settlements");
+              }
+            };
             return (
-              <Card key={stat.title} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
+              <Card 
+                key={stat.title} 
+                className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+                onClick={handleCardClick}
+              >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                     {stat.title}
@@ -115,12 +197,15 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stat.value}</div>
-                  <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    <span className={stat.change >= 0 ? "text-green-600" : "text-red-600"}>
-                      {stat.change >= 0 ? "+" : ""}{stat.change}%
-                    </span>
-                    <span className="ml-1">지난 기간 대비</span>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      <span className={stat.change >= 0 ? "text-green-600" : "text-red-600"}>
+                        {stat.change >= 0 ? "+" : ""}{stat.change}%
+                      </span>
+                      <span className="ml-1">지난 기간 대비</span>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-gray-400" />
                   </div>
                 </CardContent>
               </Card>
@@ -187,15 +272,40 @@ export default function AdminDashboard() {
                       ))}
                     </div>
                   ) : recentActivity?.length ? (
-                    recentActivity.map((activity: any) => (
-                      <div key={activity.id} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                        <div className="flex items-center gap-3">
-                          <div className="h-2 w-2 bg-blue-500 rounded-full" />
-                          <span className="text-sm">{activity.description}</span>
+                    recentActivity.map((activity: any) => {
+                      const handleActivityClick = () => {
+                        // 활동 타입에 따라 다른 페이지로 이동
+                        if (activity.type === "user_registered" || activity.type === "user") {
+                          setLocation("/admin/users");
+                        } else if (activity.type === "company_registered" || activity.type === "company") {
+                          setLocation("/admin/companies");
+                        } else if (activity.type === "job_posted" || activity.type === "job") {
+                          if (activity.jobId) {
+                            window.open(`/user/jobs/${activity.jobId}`, "_blank");
+                          } else {
+                            setLocation("/user/jobs");
+                          }
+                        } else if (activity.type === "application" || activity.type === "application_submitted") {
+                          setLocation("/admin/users");
+                        }
+                      };
+                      return (
+                        <div 
+                          key={activity.id} 
+                          className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded px-2 transition-colors"
+                          onClick={handleActivityClick}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="h-2 w-2 bg-blue-500 rounded-full" />
+                            <span className="text-sm">{activity.description}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">{activity.time}</span>
+                            <ExternalLink className="h-3 w-3 text-gray-400" />
+                          </div>
                         </div>
-                        <span className="text-xs text-gray-500">{activity.time}</span>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="text-center text-gray-500 py-8">
                       최근 활동이 없습니다
@@ -215,8 +325,13 @@ export default function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center text-gray-500 py-8">
-                  사용자 관리 기능이 여기에 표시됩니다
+                <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                  <Users className="h-16 w-16 text-gray-400" />
+                  <p className="text-gray-500">사용자 관리 페이지에서 전체 사용자를 확인하세요</p>
+                  <Button onClick={() => setLocation("/admin/users")}>
+                    사용자 관리 페이지로 이동
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -225,10 +340,18 @@ export default function AdminDashboard() {
           <TabsContent value="payments" className="space-y-6">
             <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
               <CardHeader>
-                <CardTitle>정산 관리</CardTitle>
-                <CardDescription>
-                  결제 내역과 정산을 관리합니다
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>정산 관리</CardTitle>
+                    <CardDescription>
+                      결제 내역과 정산을 관리합니다
+                    </CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setLocation("/admin/settlements")}>
+                    전체 정산 보기
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -240,7 +363,15 @@ export default function AdminDashboard() {
                     </div>
                   ) : payments?.length ? (
                     payments.map((payment: any) => (
-                      <div key={payment.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <div 
+                        key={payment.id} 
+                        className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                        onClick={() => {
+                          if (payment.companyId) {
+                            window.open(`/user/companies/${payment.companyId}`, "_blank");
+                          }
+                        }}
+                      >
                         <div>
                           <div className="font-medium">{payment.description}</div>
                           <div className="text-sm text-gray-500">{payment.user?.fullName}</div>

@@ -126,12 +126,18 @@ export default function AdminAnalytics() {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">플랫폼 분석</h1>
-            <p className="text-muted-foreground">비즈니스 성과 및 사용자 통계</p>
-          </div>
+      <div className="p-6">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            플랫폼 분석
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            비즈니스 성과 및 사용자 통계
+          </p>
+        </div>
+        
+        <div className="flex justify-end mb-6">
           <div className="flex gap-2">
             <Button onClick={() => refetch()} variant="outline" className="gap-2">
               <RefreshCw className="h-4 w-4" />
@@ -153,7 +159,7 @@ export default function AdminAnalytics() {
         </div>
 
         {/* 날짜 범위 선택 */}
-        <Card>
+        <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
@@ -210,8 +216,8 @@ export default function AdminAnalytics() {
         ) : (
           <>
             {/* 주요 지표 카드 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">총 수익</CardTitle>
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -224,7 +230,7 @@ export default function AdminAnalytics() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">신규 사용자</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -237,7 +243,7 @@ export default function AdminAnalytics() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">신규 회사</CardTitle>
                   <Building className="h-4 w-4 text-muted-foreground" />
@@ -250,7 +256,7 @@ export default function AdminAnalytics() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">신규 채용공고</CardTitle>
                   <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -265,7 +271,7 @@ export default function AdminAnalytics() {
             </div>
 
             {/* 상세 분석 테이블 */}
-            <Card>
+            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg mb-6">
               <CardHeader>
                 <CardTitle>일별 상세 분석</CardTitle>
                 <CardDescription>
@@ -338,7 +344,7 @@ export default function AdminAnalytics() {
             {/* 수익 분석 */}
             {latestAnalytics && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
+                <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                   <CardHeader>
                     <CardTitle>수익 구성</CardTitle>
                     <CardDescription>최근 데이터 기준</CardDescription>
@@ -365,7 +371,7 @@ export default function AdminAnalytics() {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                   <CardHeader>
                     <CardTitle>플랫폼 성장</CardTitle>
                     <CardDescription>누적 데이터</CardDescription>

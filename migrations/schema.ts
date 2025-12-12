@@ -256,6 +256,7 @@ export const jobs = pgTable("jobs", {
 	skills: text().array().default(["RAY"]),
 	benefits: text().array().default(["RAY"]),
 	isFeatured: boolean("is_featured").default(false),
+	isPro: boolean("is_pro").default(false),
 	isActive: boolean("is_active").default(true),
 	views: integer().default(0),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),

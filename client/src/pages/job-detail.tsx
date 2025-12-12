@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Heart, MapPin, Clock, Users, Building, Calendar, Globe, Share2, ArrowLeft, Sparkles, TrendingUp, DollarSign, Briefcase } from "lucide-react";
+import { Heart, MapPin, Clock, Users, Building, Calendar, Globe, Share2, ArrowLeft, Sparkles, TrendingUp, DollarSign, Briefcase, AlertTriangle, Eye } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import Header from "@/components/layout/header";
@@ -15,6 +15,10 @@ import { apiRequest, queryClient, apiGet } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { ApplyDialog } from "@/components/jobs/apply-dialog";
 import type { JobWithCompany } from "@shared/schema";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function JobDetail() {
   const { id } = useParams();
@@ -22,6 +26,9 @@ export default function JobDetail() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const [applyDialogOpen, setApplyDialogOpen] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
 
   const { data: job, isLoading, error } = useQuery<JobWithCompany>({
     queryKey: [`/api/jobs/${id}`],
@@ -99,6 +106,60 @@ export default function JobDetail() {
       });
     },
   });
+
+  const reportJobMutation = useMutation({
+    mutationFn: async (data: { reason: string; description: string }) => {
+      return apiRequest("POST", "/api/reports", {
+        type: "job",
+        targetId: jobId,
+        reason: data.reason,
+        description: data.description,
+      });
+    },
+    onSuccess: () => {
+      setReportDialogOpen(false);
+      setReportReason("");
+      setReportDescription("");
+      toast({
+        title: "신고 완료",
+        description: "신고가 접수되었습니다. 검토 후 조치하겠습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "오류 발생",
+        description: "신고 접수에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleReportJob = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "로그인 필요",
+        description: "로그인 후 신고하실 수 있습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setReportDialogOpen(true);
+  };
+
+  const handleSubmitReport = () => {
+    if (!reportReason) {
+      toast({
+        title: "신고 사유 선택 필요",
+        description: "신고 사유를 선택해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    reportJobMutation.mutate({
+      reason: reportReason,
+      description: reportDescription,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -185,8 +246,8 @@ export default function JobDetail() {
   const getJobTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       full_time: "정규직",
-      part_time: "계약직",
-      contract: "프리랜서",
+      contract: "계약직",
+      freelance: "프리랜서",
       internship: "인턴십"
     };
     return labels[type] || type;
@@ -341,7 +402,7 @@ export default function JobDetail() {
                 </div>
 
                 {/* Job Info */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-muted rounded-lg">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 p-4 bg-muted rounded-lg">
                   <div className="flex items-center">
                     <Users className="mr-2 h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">{getExperienceLabel(job.experienceLevel || "")}</span>
@@ -354,9 +415,17 @@ export default function JobDetail() {
                     <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">{job.location}</span>
                   </div>
+                  {(job.deadline || job.expiresAt) && (
+                    <div className="flex items-center">
+                      <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">
+                        마감일: {new Date(job.deadline || job.expiresAt || "").toLocaleDateString('ko-KR')}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center">
-                    <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">조회 {job.views}</span>
+                    <Eye className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">조회 {job.views || 0}</span>
                   </div>
                 </div>
 
@@ -487,9 +556,17 @@ export default function JobDetail() {
                     관심등록
                   </Button>
                 )}
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full mb-3">
                   <Share2 className="mr-2 h-4 w-4" />
                   공유하기
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  onClick={handleReportJob}
+                >
+                  <AlertTriangle className="mr-2 h-4 w-4" />
+                  신고하기
                 </Button>
               </CardContent>
             </Card>
@@ -591,6 +668,67 @@ export default function JobDetail() {
           }}
         />
       )}
+
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>채용공고 신고</DialogTitle>
+            <DialogDescription>
+              부적절한 채용공고를 신고해주세요. 검토 후 조치하겠습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label htmlFor="report-reason">신고 사유 *</Label>
+              <Select value={reportReason} onValueChange={setReportReason}>
+                <SelectTrigger id="report-reason" className="mt-1">
+                  <SelectValue placeholder="신고 사유를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spam">스팸/광고</SelectItem>
+                  <SelectItem value="fraud">사기성 채용공고</SelectItem>
+                  <SelectItem value="discrimination">차별적 내용</SelectItem>
+                  <SelectItem value="inappropriate">부적절한 내용</SelectItem>
+                  <SelectItem value="fake">허위 정보</SelectItem>
+                  <SelectItem value="other">기타</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="report-description">상세 설명</Label>
+              <Textarea
+                id="report-description"
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                placeholder="신고 사유에 대한 상세 설명을 입력해주세요 (선택사항)"
+                rows={4}
+                className="mt-1"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setReportDialogOpen(false);
+                  setReportReason("");
+                  setReportDescription("");
+                }}
+                disabled={reportJobMutation.isPending}
+              >
+                취소
+              </Button>
+              <Button
+                onClick={handleSubmitReport}
+                disabled={reportJobMutation.isPending || !reportReason}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {reportJobMutation.isPending ? "신고 중..." : "신고하기"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

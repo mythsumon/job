@@ -61,15 +61,18 @@ export default function AdminMonitoring() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="p-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">System Monitoring</h1>
-            <p className="text-muted-foreground">
-              Real-time platform health and performance metrics
-            </p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            시스템 모니터링
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            실시간 플랫폼 상태 및 성능 지표를 확인합니다
+          </p>
+        </div>
+        
+        <div className="flex items-center justify-end mb-6">
           <div className="flex items-center gap-4">
             <select
               value={timeRange}
@@ -101,23 +104,23 @@ export default function AdminMonitoring() {
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* System Status */}
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">System Status</CardTitle>
+                  <CardTitle className="text-sm font-medium">시스템 상태</CardTitle>
                   <Globe className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600">Healthy</div>
+                  <div className="text-2xl font-bold text-green-600">정상</div>
                   <p className="text-xs text-muted-foreground">
-                    All systems operational
+                    모든 시스템 정상 작동 중
                   </p>
                 </CardContent>
               </Card>
 
               {/* Response Time */}
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
+                  <CardTitle className="text-sm font-medium">평균 응답 시간</CardTitle>
                   <Clock className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -125,15 +128,15 @@ export default function AdminMonitoring() {
                     {metricsData?.requests?.avg ? formatDuration(metricsData.requests.avg) : 'N/A'}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Past {timeRange / 60000} minutes
+                    최근 {timeRange / 60000}분
                   </p>
                 </CardContent>
               </Card>
 
               {/* Memory Usage */}
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Memory Usage</CardTitle>
+                  <CardTitle className="text-sm font-medium">메모리 사용량</CardTitle>
                   <Database className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -141,15 +144,15 @@ export default function AdminMonitoring() {
                     {metricsData?.memory?.latest ? formatMemory(metricsData.memory.latest) : 'N/A'}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Current usage
+                    현재 사용량
                   </p>
                 </CardContent>
               </Card>
 
               {/* Active Users */}
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Active Sessions</CardTitle>
+                  <CardTitle className="text-sm font-medium">활성 세션</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -157,16 +160,16 @@ export default function AdminMonitoring() {
                     {analyticsData?.uniqueSessions || 0}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Past {timeRange / 60000} minutes
+                    최근 {timeRange / 60000}분
                   </p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Quick Health Overview */}
-            <Card>
+            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
               <CardHeader>
-                <CardTitle>Service Health Overview</CardTitle>
+                <CardTitle>서비스 상태 개요</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -188,11 +191,11 @@ export default function AdminMonitoring() {
 
           {/* Health Checks Tab */}
           <TabsContent value="health" className="space-y-6">
-            <Card>
+            <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
               <CardHeader>
-                <CardTitle>System Health Checks</CardTitle>
+                <CardTitle>시스템 상태 확인</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Detailed health status for all system components
+                  모든 시스템 구성 요소의 상세 상태
                 </p>
               </CardHeader>
               <CardContent>
@@ -236,9 +239,9 @@ export default function AdminMonitoring() {
           <TabsContent value="metrics" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Request Performance */}
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader>
-                  <CardTitle>Request Performance</CardTitle>
+                  <CardTitle>요청 성능</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {metricsData?.requests ? (
@@ -267,9 +270,9 @@ export default function AdminMonitoring() {
               </Card>
 
               {/* Database Performance */}
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader>
-                  <CardTitle>Database Performance</CardTitle>
+                  <CardTitle>데이터베이스 성능</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {metricsData?.database ? (
@@ -298,9 +301,9 @@ export default function AdminMonitoring() {
               </Card>
 
               {/* Memory Usage */}
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader>
-                  <CardTitle>Memory Usage</CardTitle>
+                  <CardTitle>메모리 사용량</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {metricsData?.memory ? (
@@ -329,9 +332,9 @@ export default function AdminMonitoring() {
               </Card>
 
               {/* Error Tracking */}
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader>
-                  <CardTitle>Error Tracking</CardTitle>
+                  <CardTitle>오류 추적</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {metricsData?.errors ? (
@@ -364,9 +367,9 @@ export default function AdminMonitoring() {
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader>
-                  <CardTitle>User Activity</CardTitle>
+                  <CardTitle>사용자 활동</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {analyticsData ? (
@@ -390,9 +393,9 @@ export default function AdminMonitoring() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                 <CardHeader>
-                  <CardTitle>Event Types</CardTitle>
+                  <CardTitle>이벤트 유형</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {analyticsData?.eventTypes ? (

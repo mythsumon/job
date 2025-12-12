@@ -438,6 +438,18 @@ export const mn = {
         tooltip: "Хэл солих"
       }
     },
+    view: "Тойм",
+    experience: "Туршлага",
+    education: "Боловсрол",
+    skills: "Ур чадвар",
+    bio: "Танилцуулга",
+    resume: "Анкет",
+    noResume: "Анкет мэдээлэл байхгүй байна.",
+    noData: "Мэдээлэл байхгүй байна.",
+    actions: {
+      message: "Мессеж",
+      download: "Татаж авах"
+    },
     search: {
       placeholder: "Ажлын байр, компани, түлхүүр үг хайх...",
       pressEnter: "Хайхын тулд Enter дарна уу",
@@ -455,6 +467,7 @@ export const mn = {
     interviews: "Ярилцлагын хуваарь",
     recommendations: "Хүний нөөцийн зөвлөмж",
     branding: "Брэнд засал",
+    companyProfile: "Компанийн профайл",
     companyInfo: "Компанийн мэдээлэл",
     settings: "Тохиргоо",
     backToUser: "Хэрэглэгчийн сайт руу буцах",
@@ -1064,6 +1077,20 @@ export const mn = {
       finalPassed: "Эцсийн шат давсан",
       rejected: "Татгалзсан"
     },
+    
+    actions: {
+      viewProfile: "Профайл харах",
+      contact: "Холбоо барих",
+      schedule: "Ярилцлага товлох",
+      chat: "Чат эхлүүлэх"
+    },
+    
+    candidateProfile: "Өргөдөл гаргагчийн профайл",
+    appliedAt: "Өргөдөл гаргасан огноо",
+    experience: "Туршлага",
+    education: "Боловсрол",
+    skills: "Ур чадвар",
+    notes: "Тэмдэглэл",
     
     tabs: {
       all: "Бүгд",
@@ -1735,6 +1762,7 @@ export const mn = {
       companies: "Компаниуд",
       career: "Карьера",
       community: "Олон нийт",
+      pricing: "Үнэ",
       messages: "Мессеж"
     },
     search: {
@@ -1745,5 +1773,5 @@ export const mn = {
       register: "Бүртгүүлэх",
       logout: "Гарах"
     }
-  },
+  }
 };

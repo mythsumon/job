@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,7 +19,8 @@ import {
   Briefcase,
   Building,
   Trash2,
-  ArrowRight
+  ArrowRight,
+  ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { JobWithCompany } from "@shared/schema";
@@ -52,6 +53,7 @@ export default function SavedJobs() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   const { data: savedJobs, isLoading } = useQuery<SavedJob[]>({
     queryKey: ["/api/saved-jobs", user?.id],
@@ -90,6 +92,17 @@ export default function SavedJobs() {
           <Header />
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="mb-8">
+              <div className="mb-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLocation("/user/home")}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  뒤로가기
+                </Button>
+              </div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 저장된 채용공고
               </h1>

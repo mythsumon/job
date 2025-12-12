@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +23,10 @@ import {
   Hourglass,
   FileText,
   Building,
-  ArrowRight
+  ArrowRight,
+  ArrowLeft,
+  MessageCircle,
+  Eye
 } from "lucide-react";
 import type { JobWithCompany } from "@shared/schema";
 
@@ -73,6 +76,7 @@ const formatSalary = (min?: number, max?: number) => {
 
 export default function UserApplications() {
   const { user, isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<string>("all");
 
   const { data: applications, isLoading } = useQuery<Application[]>({
@@ -105,6 +109,17 @@ export default function UserApplications() {
           <Header />
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="mb-8">
+              <div className="mb-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLocation("/user/home")}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  뒤로가기
+                </Button>
+              </div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 지원 현황
               </h1>
@@ -209,10 +224,29 @@ export default function UserApplications() {
                             <div className="ml-4 flex flex-col gap-2">
                               <Link href={`/user/jobs/${application.jobId}`}>
                                 <Button variant="outline" size="sm">
-                                  상세보기
+                                  채용공고 보기
                                   <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                               </Link>
+                              {application.job?.company?.id && (
+                                <>
+                                  <Link href={`/user/companies/${application.job.company.id}`}>
+                                    <Button variant="outline" size="sm">
+                                      <Eye className="mr-2 h-4 w-4" />
+                                      기업 보기
+                                    </Button>
+                                  </Link>
+                                  {/* 채팅은 Company가 시작한 경우만 표시 */}
+                                  {application.status !== "pending" && (
+                                    <Link href={`/user/chat?job=${application.jobId}&company=${application.job.company.id}`}>
+                                      <Button variant="default" size="sm">
+                                        <MessageCircle className="mr-2 h-4 w-4" />
+                                        채팅하기
+                                      </Button>
+                                    </Link>
+                                  )}
+                                </>
+                              )}
                             </div>
                           </div>
                         </CardContent>
@@ -229,4 +263,3 @@ export default function UserApplications() {
     </RoleGuard>
   );
 }
-

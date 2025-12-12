@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 import { 
   BookOpen, 
   TrendingUp, 
@@ -443,6 +444,7 @@ export default function Career() {
           </TabsContent>
         </Tabs>
       </div>
+      <Footer />
     </div>
     </>
   );

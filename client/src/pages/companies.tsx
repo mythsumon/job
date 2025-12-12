@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { apiGet } from "@/lib/queryClient";
 import { INDUSTRIES, LOCATIONS, COMPANY_SIZES } from "@/lib/types";
 import type { Company, JobWithCompany } from "@shared/schema";
 
@@ -39,10 +40,15 @@ export default function Companies() {
   const { data: companies, isLoading } = useQuery<Company[]>({
     queryKey: ["/api/companies", queryParams.toString()],
     queryFn: async () => {
-      const response = await fetch(`/api/companies?${queryParams.toString()}`);
-      if (!response.ok) throw new Error("Failed to fetch companies");
-      return response.json();
+      const url = queryParams.toString() 
+        ? `/api/companies?${queryParams.toString()}` 
+        : "/api/companies";
+      const data = await apiGet<Company[]>(url);
+      // Ensure we always return an array
+      return Array.isArray(data) ? data : [];
     },
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch job counts for each company
@@ -311,7 +317,14 @@ export default function Companies() {
             {/* Load More Button */}
             {companies && companies.length > 0 && !isLoading && (
               <div className="text-center mt-8">
-                <Button variant="outline" size="lg">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => {
+                    // 페이지네이션 또는 더 많은 결과 로드 로직
+                    console.log("Load more companies");
+                  }}
+                >
                   더 많은 기업 보기
                 </Button>
               </div>

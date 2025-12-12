@@ -17,6 +17,7 @@ export const ko = {
       companies: "기업정보", 
       career: "커리어 가이드",
       community: "커뮤니티",
+      pricing: "요금제",
       messages: "메시지",
     },
     search: {
@@ -331,6 +332,18 @@ export const ko = {
       selector: {
         tooltip: "언어 변경"
       }
+    },
+    view: "개요",
+    experience: "경력",
+    education: "학력",
+    skills: "기술 스택",
+    bio: "소개",
+    resume: "이력서",
+    noResume: "이력서 정보가 없습니다.",
+    noData: "데이터가 없습니다.",
+    actions: {
+      message: "메시지",
+      download: "다운로드"
     }
   },
 
@@ -347,6 +360,7 @@ export const ko = {
     interviews: "면접 일정",
     recommendations: "인재 추천",
     branding: "브랜딩",
+    companyProfile: "회사 프로필",
     companyInfo: "기업정보",
     settings: "설정",
     backToUser: "사용자 사이트로 이동",
@@ -684,48 +698,64 @@ export const ko = {
       status: "상태",
       allStatuses: "모든 상태",
       department: "부서",
-      allDepartments: "모든 부서"
+      allDepartments: "모든 부서",
     },
-
-    // Tabs
+    actions: {
+      viewApplicants: "지원자 보기",
+      edit: "수정",
+      delete: "삭제",
+      analytics: "분석",
+      pause: "일시정지",
+      activate: "활성화",
+      close: "마감",
+      duplicate: "복제",
+      copyLink: "링크 복사",
+      publish: "게시",
+      viewAnalytics: "상세 분석",
+    },
+    metrics: {
+      views: "조회수",
+      applicants: "지원자",
+      saves: "저장",
+      daysLeft: "남은 일수",
+      conversionRate: "전환율",
+    },
     tabs: {
       all: "전체",
       active: "게시중",
       draft: "임시저장",
-      analytics: "분석"
+      analytics: "분석",
     },
-
-    // Job Card
-    remote: "원격근무",
-    moreItems: "개 더",
-
-    // Metrics
-    metrics: {
-      views: "조회수",
-      applicants: "지원자",
-      saves: "관심등록",
-      daysLeft: "남은 일수"
-    },
-
-    // Actions
-    actions: {
-      viewApplicants: "지원자 보기",
-      edit: "수정",
-      analytics: "통계",
-      delete: "삭제"
-    },
-
-    // Empty States
     emptyStates: {
+      noJobs: {
+        title: "채용공고가 없습니다",
+        description: "새로운 채용공고를 작성해보세요",
+      },
+      active: {
+        title: "활성 채용공고가 없습니다",
+        description: "새로운 채용공고를 작성하거나 초안을 게시하세요",
+      },
       draft: {
-        title: "임시저장된 채용공고",
-        description: "작성 중인 채용공고들을 관리하세요"
+        title: "초안이 없습니다",
+        description: "새로운 채용공고를 작성해보세요",
+      },
+      paused: {
+        title: "일시정지된 채용공고가 없습니다",
+        description: "일시정지된 채용공고가 여기에 표시됩니다",
       },
       analytics: {
-        title: "채용공고 분석",
-        description: "각 채용공고의 상세한 성과 분석을 확인하세요"
-      }
-    }
+        title: "분석 데이터가 없습니다",
+        description: "채용공고를 작성하고 게시하면 분석 데이터를 확인할 수 있습니다",
+      },
+    },
+    editDialog: {
+      title: "채용공고 수정",
+    },
+    deleteDialog: {
+      title: "채용공고 삭제 확인",
+    },
+    remote: "원격근무",
+    moreItems: "개 더"
   },
 
   // Company Applications
@@ -759,6 +789,20 @@ export const ko = {
       finalPassed: "최종 통과",
       rejected: "불합격"
     },
+    
+    actions: {
+      viewProfile: "프로필 보기",
+      contact: "연락하기",
+      schedule: "면접 일정",
+      chat: "채팅 시작"
+    },
+    
+    candidateProfile: "지원자 프로필",
+    appliedAt: "지원일",
+    experience: "경력",
+    education: "학력",
+    skills: "기술 스택",
+    notes: "메모",
     
     tabs: {
       all: "전체",
@@ -1050,6 +1094,37 @@ export const ko = {
       cancelled: "취소됨",
       rescheduled: "재조정됨",
     },
+    actions: {
+      joinMeeting: "회의 참여",
+      edit: "수정",
+      cancel: "취소",
+      reschedule: "일정 변경",
+      sendReminder: "알림 전송",
+      addFeedback: "피드백 추가",
+      editFeedback: "피드백 수정",
+      viewDetails: "상세 보기",
+      delete: "삭제",
+      confirmCancel: "취소 확인",
+    },
+    editDialog: {
+      title: "면접 정보 수정",
+    },
+    cancelDialog: {
+      title: "면접 취소 확인",
+    },
+    rescheduleDialog: {
+      title: "면접 일정 변경",
+      reason: "변경 사유",
+      reasonPlaceholder: "일정 변경 사유를 입력해주세요...",
+    },
+    feedbackDialog: {
+      title: "면접 피드백",
+      rating: "평점",
+      placeholder: "면접 피드백을 입력해주세요...",
+    },
+    detailsDialog: {
+      title: "면접 상세 정보",
+    },
     time: {
       today: "오늘",
       tomorrow: "내일",
@@ -1088,7 +1163,32 @@ export const ko = {
       joinMeeting: "회의 참여",
       edit: "수정",
       cancel: "취소",
-      viewDetails: "상세보기",
+      reschedule: "일정 변경",
+      sendReminder: "알림 전송",
+      addFeedback: "피드백 추가",
+      editFeedback: "피드백 수정",
+      viewDetails: "상세 보기",
+      delete: "삭제",
+      confirmCancel: "취소 확인",
+    },
+    editDialog: {
+      title: "면접 정보 수정",
+    },
+    cancelDialog: {
+      title: "면접 취소 확인",
+    },
+    rescheduleDialog: {
+      title: "면접 일정 변경",
+      reason: "변경 사유",
+      reasonPlaceholder: "일정 변경 사유를 입력해주세요...",
+    },
+    feedbackDialog: {
+      title: "면접 피드백",
+      rating: "평점",
+      placeholder: "면접 피드백을 입력해주세요...",
+    },
+    detailsDialog: {
+      title: "면접 상세 정보",
     },
   },
 

@@ -578,4 +578,3 @@ export const insertResumeSchema = createInsertSchema(resumes).omit({
 });
 
 export type Resume = typeof resumes.$inferSelect;
-export type InsertResume = z.infer<typeof insertResumeSchema>;

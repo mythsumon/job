@@ -4,6 +4,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Globe } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import {
   BarChart,
@@ -54,16 +61,20 @@ import {
   CheckCircle,
   XCircle,
   Circle,
+  User,
+  Shield,
 } from "lucide-react";
 import { CareerSection } from "@/components/career/career-section";
 import { FeedSection } from "@/components/feed/feed-section";
+import { useAuth } from "@/hooks/useAuth";
 
 
 
 
 
 export default function CompanyDashboard() {
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+  const { user } = useAuth();
 
   const candidateSourceData = [
     { name: t("companyDashboard.directApplication"), value: 45, color: "#3B82F6" },
@@ -108,7 +119,7 @@ export default function CompanyDashboard() {
       candidate: "김민수",
       position: t("companyDashboard.frontendDeveloper"),
       time: `${t("companyDashboard.today")} 14:00`,
-      type: t("companyDashboard.videoInterview"),
+      type: t("companyDashboard.faceToFaceInterview"),
     },
     {
       id: 2,
@@ -180,8 +191,8 @@ export default function CompanyDashboard() {
     {
       id: 1,
       title: t("companyDashboard.frontendDeveloper"),
-      department: "개발팀",
-      location: "서울시 강남구",
+      department: t("companyDashboard.developmentTeam"),
+      location: t("companyDashboard.seoulGangnam"),
       applications: 45,
       views: 1250,
       status: "active",
@@ -191,8 +202,8 @@ export default function CompanyDashboard() {
     {
       id: 2,
       title: t("companyDashboard.backendDeveloper"),
-      department: "개발팀",
-      location: "서울시 강남구",
+      department: t("companyDashboard.developmentTeam"),
+      location: t("companyDashboard.seoulGangnam"),
       applications: 38,
       views: 980,
       status: "active",
@@ -202,8 +213,8 @@ export default function CompanyDashboard() {
     {
       id: 3,
       title: t("companyDashboard.dataAnalyst"),
-      department: "데이터팀",
-      location: "서울시 서초구",
+      department: t("companyDashboard.dataTeam"),
+      location: t("companyDashboard.seoulSeocho"),
       applications: 32,
       views: 720,
       status: "active",
@@ -214,36 +225,36 @@ export default function CompanyDashboard() {
 
   // Pipeline Status
   const pipelineStatus = [
-    { stage: t("companyDashboard.stageReview") || "서류 검토", count: 12, color: "bg-yellow-500" },
-    { stage: t("companyDashboard.stageInterview") || "면접", count: 8, color: "bg-blue-500" },
-    { stage: t("companyDashboard.stageOffer") || "제안", count: 3, color: "bg-green-500" },
-    { stage: t("companyDashboard.stageHired") || "채용 완료", count: 5, color: "bg-purple-500" },
+    { stage: t("companyDashboard.stageReview"), count: 12, color: "bg-yellow-500" },
+    { stage: t("companyDashboard.stageInterview"), count: 8, color: "bg-blue-500" },
+    { stage: t("companyDashboard.stageOffer"), count: 3, color: "bg-green-500" },
+    { stage: t("companyDashboard.stageHired"), count: 5, color: "bg-purple-500" },
   ];
 
   // Priority Tasks
   const priorityTasks = [
     {
       id: 1,
-      title: t("companyDashboard.taskReviewApplications") || "지원서 검토 필요",
-      description: t("companyDashboard.taskReviewApplicationsDesc") || "12건의 새로운 지원서가 있습니다",
+      title: t("companyDashboard.taskReviewApplications"),
+      description: t("companyDashboard.taskReviewApplicationsDesc"),
       priority: "high",
       dueDate: t("companyDashboard.today"),
       link: "/company/applications?status=pending",
     },
     {
       id: 2,
-      title: t("companyDashboard.taskScheduleInterviews") || "면접 일정 잡기",
-      description: t("companyDashboard.taskScheduleInterviewsDesc") || "3명의 후보자 면접 일정이 필요합니다",
+      title: t("companyDashboard.taskScheduleInterviews"),
+      description: t("companyDashboard.taskScheduleInterviewsDesc"),
       priority: "medium",
       dueDate: t("companyDashboard.tomorrow"),
       link: "/company/interviews",
     },
     {
       id: 3,
-      title: t("companyDashboard.taskUpdateJobPosting") || "채용공고 업데이트",
-      description: t("companyDashboard.taskUpdateJobPostingDesc") || "2개 채용공고의 만료일이 임박했습니다",
+      title: t("companyDashboard.taskUpdateJobPosting"),
+      description: t("companyDashboard.taskUpdateJobPostingDesc"),
       priority: "low",
-      dueDate: "3일 후",
+      dueDate: `3 ${t("companyDashboard.daysLater")}`,
       link: "/company/jobs",
     },
   ];
@@ -253,32 +264,32 @@ export default function CompanyDashboard() {
     {
       id: 1,
       type: "application",
-      message: t("companyDashboard.activityNewApplication") || "김민수님이 프론트엔드 개발자에 지원했습니다",
-      time: "2시간 전",
+      message: t("companyDashboard.activityNewApplication"),
+      time: `2 ${t("companyDashboard.hoursAgo")}`,
       icon: FileText,
       color: "text-blue-600",
     },
     {
       id: 2,
       type: "interview",
-      message: t("companyDashboard.activityInterviewScheduled") || "이지현님과의 면접이 예정되었습니다",
-      time: "4시간 전",
+      message: t("companyDashboard.activityInterviewScheduled"),
+      time: `4 ${t("companyDashboard.hoursAgo")}`,
       icon: Calendar,
       color: "text-green-600",
     },
     {
       id: 3,
       type: "job",
-      message: t("companyDashboard.activityJobPosted") || "새 채용공고가 게시되었습니다",
-      time: "1일 전",
+      message: t("companyDashboard.activityJobPosted"),
+      time: `1 ${t("companyDashboard.daysAgo")}`,
       icon: Briefcase,
       color: "text-purple-600",
     },
     {
       id: 4,
       type: "hired",
-      message: t("companyDashboard.activityHired") || "박준호님이 채용되었습니다",
-      time: "2일 전",
+      message: t("companyDashboard.activityHired"),
+      time: `2 ${t("companyDashboard.daysAgo")}`,
       icon: CheckCircle,
       color: "text-green-600",
     },
@@ -287,19 +298,19 @@ export default function CompanyDashboard() {
   // Performance Goals
   const performanceGoals = [
     {
-      title: t("companyDashboard.goalMonthlyHires") || "이번 달 채용 목표",
+      title: t("companyDashboard.goalMonthlyHires"),
       current: 5,
       target: 10,
-      unit: t("companyDashboard.people") || "명",
+      unit: t("companyDashboard.people"),
     },
     {
-      title: t("companyDashboard.goalApplicationResponse") || "지원서 응답률",
+      title: t("companyDashboard.goalApplicationResponse"),
       current: 85,
       target: 90,
       unit: "%",
     },
     {
-      title: t("companyDashboard.goalInterviewCompletion") || "면접 완료율",
+      title: t("companyDashboard.goalInterviewCompletion"),
       current: 70,
       target: 80,
       unit: "%",
@@ -318,11 +329,39 @@ export default function CompanyDashboard() {
             </p>
           </div>
           <div className="flex items-center space-x-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Globe className="h-4 w-4 mr-2" />
+                  {language === "ko" ? "한국어" : language === "en" ? "English" : "Монгол"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setLanguage("ko")}>
+                  한국어
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage("en")}>
+                  English
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage("mn")}>
+                  Монгол
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Link href="/user/home">
-              <Button variant="outline">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <User className="w-4 h-4" />
                 {t("companyNav.backToUser")}
               </Button>
             </Link>
+            {(user?.userType === 'admin' || user?.role === 'admin') && (
+              <Link href="/admin/dashboard">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  관리자 대시보드
+                </Button>
+              </Link>
+            )}
             <Link href="/company/jobs?action=create">
               <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                 {t("companyDashboard.postNewJob")}
@@ -340,7 +379,7 @@ export default function CompanyDashboard() {
                   {t("companyDashboard.quickActions")}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t("companyDashboard.quickActionsDescription") || "자주 사용하는 기능에 빠르게 접근하세요"}
+                  {t("companyDashboard.quickActionsDescription")}
                 </p>
               </div>
             </div>
@@ -472,16 +511,16 @@ export default function CompanyDashboard() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center">
                 <Briefcase className="h-5 w-5 mr-2 text-blue-600" />
-                {t("companyDashboard.activeJobs") || "활성 채용공고"}
+                {t("companyDashboard.activeJobs")}
               </CardTitle>
               <Link href="/company/jobs">
                 <Button variant="ghost" size="sm">
-                  {t("common.viewAll") || "전체 보기"} →
+                  {t("common.viewAll")} →
                 </Button>
               </Link>
             </div>
             <CardDescription>
-              {t("companyDashboard.activeJobsDescription") || "현재 진행 중인 채용공고 현황"}
+              {t("companyDashboard.activeJobsDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -520,7 +559,7 @@ export default function CompanyDashboard() {
                         </p>
                       </div>
                       <Badge variant="outline" className="text-xs">
-                        {t("companyDashboard.active") || "활성"}
+                        {t("companyDashboard.active")}
                       </Badge>
                     </div>
                   </div>
@@ -716,7 +755,7 @@ export default function CompanyDashboard() {
                             {task.description}
                           </p>
                           <p className="text-xs text-gray-400">
-                            {t("companyDashboard.dueDate") || "마감일"}: {task.dueDate}
+                            {t("companyDashboard.dueDate")}: {task.dueDate}
                           </p>
                         </div>
                       </div>
@@ -760,7 +799,7 @@ export default function CompanyDashboard() {
                 })}
                 <Link href="/company/applications">
                   <Button variant="ghost" className="w-full mt-2">
-                    {t("companyDashboard.viewAllActivity") || "전체 활동 보기"} →
+                    {t("companyDashboard.viewAllActivity")} →
                   </Button>
                 </Link>
               </div>
@@ -875,7 +914,7 @@ export default function CompanyDashboard() {
                 ))}
                 <Link href="/company/interviews">
                   <Button variant="ghost" className="w-full mt-2">
-                    {t("companyDashboard.viewAllInterviews") || "전체 면접 일정 보기"} →
+                    {t("companyDashboard.viewAllInterviews")} →
                   </Button>
                 </Link>
               </div>

@@ -168,12 +168,18 @@ export default function AdminSettings() {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">시스템 설정</h1>
-            <p className="text-muted-foreground">플랫폼 전체 설정 관리</p>
-          </div>
+      <div className="p-6">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            시스템 설정
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            플랫폼 전체 설정 관리
+          </p>
+        </div>
+        
+        <div className="flex justify-end mb-6">
           <Dialog>
             <DialogTrigger asChild>
               <Button className="gap-2">
@@ -297,7 +303,7 @@ export default function AdminSettings() {
           </div>
         ) : categories.length > 0 ? (
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-6 mb-6">
               {categories.map(category => (
                 <TabsTrigger key={category} value={category}>
                   {getCategoryLabel(category)}
@@ -307,7 +313,7 @@ export default function AdminSettings() {
 
             {categories.map(category => (
               <TabsContent key={category} value={category} className="space-y-4">
-                <Card>
+                <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Settings2 className="h-5 w-5" />
@@ -363,7 +369,7 @@ export default function AdminSettings() {
             ))}
           </Tabs>
         ) : (
-          <Card>
+          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Settings2 className="h-16 w-16 text-muted-foreground mb-4" />
               <h3 className="text-xl font-medium mb-2">설정이 없습니다</h3>
@@ -378,7 +384,7 @@ export default function AdminSettings() {
         )}
 
         {/* 시스템 정보 카드 */}
-        <Card>
+        <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-0 shadow-lg mt-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Info className="h-5 w-5" />

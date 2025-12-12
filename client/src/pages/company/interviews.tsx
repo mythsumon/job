@@ -31,6 +31,20 @@ import {
   Star,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { MessageTemplateDialog } from "@/components/company/message-template-dialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical, Send, Bell, RotateCcw, Eye } from "lucide-react";
 
 const interviews = [
   {
@@ -152,8 +166,230 @@ const formatDate = (dateString: string, t: any) => {
 
 export default function CompanyInterviews() {
   const { t } = useLanguage();
-  const upcomingInterviews = interviews.filter(i => i.status === "scheduled");
-  const completedInterviews = interviews.filter(i => i.status === "completed");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [interviewsState, setInterviewsState] = useState(interviews);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
+  const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
+  const [isViewDetailsDialogOpen, setIsViewDetailsDialogOpen] = useState(false);
+  const [selectedInterview, setSelectedInterview] = useState<any>(null);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [rating, setRating] = useState(0);
+  const [isInterviewMessageDialogOpen, setIsInterviewMessageDialogOpen] = useState(false);
+  const [selectedInterviewForMessage, setSelectedInterviewForMessage] = useState<any>(null);
+  
+  // Form state for adding new interview
+  const [newInterviewForm, setNewInterviewForm] = useState({
+    candidateId: "",
+    interviewerId: "",
+    date: "",
+    time: "",
+    duration: "60",
+    type: "video",
+    location: "",
+    notes: "",
+  });
+  
+  const upcomingInterviews = interviewsState.filter(i => i.status === "scheduled");
+  const completedInterviews = interviewsState.filter(i => i.status === "completed");
+
+  const handleJoinMeeting = (interview: any) => {
+    if (interview.meetingLink) {
+      window.open(interview.meetingLink, "_blank");
+      toast({
+        title: t("common.success") || "성공",
+        description: "화상면접 링크를 열었습니다.",
+      });
+    }
+  };
+
+  const handleEditInterview = (interview: any) => {
+    setSelectedInterview(interview);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    toast({
+      title: t("common.success") || "성공",
+      description: "면접 정보가 수정되었습니다.",
+    });
+    setIsEditDialogOpen(false);
+    setSelectedInterview(null);
+  };
+
+  const handleCancelInterview = (interview: any) => {
+    setSelectedInterview(interview);
+    setIsCancelDialogOpen(true);
+  };
+
+  const handleConfirmCancel = () => {
+    if (selectedInterview) {
+      setInterviewsState(prev => 
+        prev.map(i => 
+          i.id === selectedInterview.id 
+            ? { ...i, status: "cancelled" }
+            : i
+        )
+      );
+      toast({
+        title: t("common.success") || "성공",
+        description: "면접이 취소되었습니다.",
+      });
+    }
+    setIsCancelDialogOpen(false);
+    setSelectedInterview(null);
+  };
+
+  const handleReschedule = (interview: any) => {
+    setSelectedInterview(interview);
+    setIsRescheduleDialogOpen(true);
+  };
+
+  const handleSaveReschedule = () => {
+    toast({
+      title: t("common.success") || "성공",
+      description: "면접 일정이 변경되었습니다.",
+    });
+    setIsRescheduleDialogOpen(false);
+    setSelectedInterview(null);
+  };
+
+  const handleAddFeedback = (interview: any) => {
+    setSelectedInterview(interview);
+    setFeedbackText(interview.feedback || "");
+    setRating(interview.rating || 0);
+    setIsFeedbackDialogOpen(true);
+  };
+
+  const handleSaveFeedback = () => {
+    if (selectedInterview) {
+      setInterviewsState(prev => 
+        prev.map(i => 
+          i.id === selectedInterview.id 
+            ? { ...i, feedback: feedbackText, rating: rating }
+            : i
+        )
+      );
+      toast({
+        title: t("common.success") || "성공",
+        description: "피드백이 저장되었습니다.",
+      });
+    }
+    setIsFeedbackDialogOpen(false);
+    setSelectedInterview(null);
+    setFeedbackText("");
+    setRating(0);
+  };
+
+  const handleViewDetails = (interview: any) => {
+    setSelectedInterview(interview);
+    setIsViewDetailsDialogOpen(true);
+  };
+
+  const handleDeleteInterview = (interview: any) => {
+    if (confirm("정말 이 면접을 삭제하시겠습니까?")) {
+      setInterviewsState(prev => prev.filter(i => i.id !== interview.id));
+      toast({
+        title: t("common.success") || "성공",
+        description: "면접이 삭제되었습니다.",
+      });
+    }
+  };
+
+  const handleSendReminder = (interview: any) => {
+    setSelectedInterviewForMessage(interview);
+    setIsInterviewMessageDialogOpen(true);
+  };
+
+  const sendInterviewMessageMutation = useMutation({
+    mutationFn: async (data: { interviewId: number; sendEmail: boolean; emailSubject?: string; emailBody?: string }) => {
+      return await apiRequest("POST", `/api/company/interviews/${data.interviewId}/send-notification`, {
+        sendEmail: data.sendEmail,
+        emailSubject: data.emailSubject,
+        emailBody: data.emailBody,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/company/interviews"] });
+      setIsInterviewMessageDialogOpen(false);
+      setSelectedInterviewForMessage(null);
+      toast({
+        title: t("common.success") || "성공",
+        description: "면접 안내 메시지가 전송되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "오류",
+        description: error?.message || "면접 안내 메시지 전송에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddInterview = () => {
+    if (!newInterviewForm.candidateId || !newInterviewForm.interviewerId || !newInterviewForm.date || !newInterviewForm.time) {
+      toast({
+        title: t("common.error") || "오류",
+        description: "필수 항목을 모두 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const candidate = interviews.find(i => i.candidate.email.includes("minsu")) || interviews[0];
+    const interviewer = interviews.find(i => i.interviewer.email.includes("park")) || interviews[0].interviewer;
+    
+    const newInterview = {
+      id: interviewsState.length + 1,
+      candidate: {
+        name: candidate.candidate.name,
+        email: candidate.candidate.email,
+        avatar: candidate.candidate.avatar,
+        position: candidate.candidate.position,
+      },
+      interviewer: {
+        name: interviewer.name,
+        email: interviewer.email,
+        avatar: interviewer.avatar,
+      },
+      scheduledAt: `${newInterviewForm.date}T${newInterviewForm.time}:00`,
+      duration: parseInt(newInterviewForm.duration),
+      type: newInterviewForm.type === "video" ? "화상면접" : newInterviewForm.type === "inPerson" ? "대면면접" : "전화면접",
+      location: newInterviewForm.location,
+      status: "scheduled",
+      notes: newInterviewForm.notes,
+      meetingLink: newInterviewForm.type === "video" ? "https://zoom.us/j/123456789" : "",
+    };
+
+    setInterviewsState(prev => [...prev, newInterview]);
+    setIsAddDialogOpen(false);
+    
+    // Show option to send interview notification
+    const shouldSendNotification = window.confirm("면접 일정 안내 메시지를 전송하시겠습니까?");
+    if (shouldSendNotification) {
+      setSelectedInterviewForMessage(newInterview);
+      setIsInterviewMessageDialogOpen(true);
+    }
+    
+    setNewInterviewForm({
+      candidateId: "",
+      interviewerId: "",
+      date: "",
+      time: "",
+      duration: "60",
+      type: "video",
+      location: "",
+      notes: "",
+    });
+    toast({
+      title: t("common.success") || "성공",
+      description: "면접이 일정에 추가되었습니다.",
+    });
+  };
 
   return (
     <CompanyLayout>
@@ -167,9 +403,9 @@ export default function CompanyInterviews() {
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <Dialog>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600" onClick={() => setIsAddDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   {t('companyInterviews.addInterview')}
                 </Button>
@@ -184,8 +420,8 @@ export default function CompanyInterviews() {
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium">{t('companyInterviews.form.candidate')}</label>
-                      <Select>
+                      <Label className="text-sm font-medium">{t('companyInterviews.form.candidate')}</Label>
+                      <Select value={newInterviewForm.candidateId} onValueChange={(value) => setNewInterviewForm(prev => ({ ...prev, candidateId: value }))}>
                         <SelectTrigger>
                           <SelectValue placeholder={t('companyInterviews.form.candidatePlaceholder')} />
                         </SelectTrigger>
@@ -197,8 +433,8 @@ export default function CompanyInterviews() {
                       </Select>
                     </div>
                     <div>
-                      <label className="text-sm font-medium">{t('companyInterviews.form.interviewer')}</label>
-                      <Select>
+                      <Label className="text-sm font-medium">{t('companyInterviews.form.interviewer')}</Label>
+                      <Select value={newInterviewForm.interviewerId} onValueChange={(value) => setNewInterviewForm(prev => ({ ...prev, interviewerId: value }))}>
                         <SelectTrigger>
                           <SelectValue placeholder={t('companyInterviews.form.interviewerPlaceholder')} />
                         </SelectTrigger>
@@ -212,18 +448,26 @@ export default function CompanyInterviews() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium">{t('companyInterviews.form.date')}</label>
-                      <Input type="date" />
+                      <Label className="text-sm font-medium">{t('companyInterviews.form.date')}</Label>
+                      <Input 
+                        type="date" 
+                        value={newInterviewForm.date}
+                        onChange={(e) => setNewInterviewForm(prev => ({ ...prev, date: e.target.value }))}
+                      />
                     </div>
                     <div>
-                      <label className="text-sm font-medium">{t('companyInterviews.form.time')}</label>
-                      <Input type="time" />
+                      <Label className="text-sm font-medium">{t('companyInterviews.form.time')}</Label>
+                      <Input 
+                        type="time" 
+                        value={newInterviewForm.time}
+                        onChange={(e) => setNewInterviewForm(prev => ({ ...prev, time: e.target.value }))}
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium">{t('companyInterviews.form.duration')}</label>
-                      <Select>
+                      <Label className="text-sm font-medium">{t('companyInterviews.form.duration')}</Label>
+                      <Select value={newInterviewForm.duration} onValueChange={(value) => setNewInterviewForm(prev => ({ ...prev, duration: value }))}>
                         <SelectTrigger>
                           <SelectValue placeholder={t('companyInterviews.form.durationPlaceholder')} />
                         </SelectTrigger>
@@ -236,8 +480,8 @@ export default function CompanyInterviews() {
                       </Select>
                     </div>
                     <div>
-                      <label className="text-sm font-medium">{t('companyInterviews.form.type')}</label>
-                      <Select>
+                      <Label className="text-sm font-medium">{t('companyInterviews.form.type')}</Label>
+                      <Select value={newInterviewForm.type} onValueChange={(value) => setNewInterviewForm(prev => ({ ...prev, type: value }))}>
                         <SelectTrigger>
                           <SelectValue placeholder={t('companyInterviews.form.typePlaceholder')} />
                         </SelectTrigger>
@@ -250,16 +494,24 @@ export default function CompanyInterviews() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">{t('companyInterviews.form.location')}</label>
-                    <Input placeholder={t('companyInterviews.form.locationPlaceholder')} />
+                    <Label className="text-sm font-medium">{t('companyInterviews.form.location')}</Label>
+                    <Input 
+                      placeholder={t('companyInterviews.form.locationPlaceholder')}
+                      value={newInterviewForm.location}
+                      onChange={(e) => setNewInterviewForm(prev => ({ ...prev, location: e.target.value }))}
+                    />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">{t('companyInterviews.form.notes')}</label>
-                    <Input placeholder={t('companyInterviews.form.notesPlaceholder')} />
+                    <Label className="text-sm font-medium">{t('companyInterviews.form.notes')}</Label>
+                    <Textarea 
+                      placeholder={t('companyInterviews.form.notesPlaceholder')}
+                      value={newInterviewForm.notes}
+                      onChange={(e) => setNewInterviewForm(prev => ({ ...prev, notes: e.target.value }))}
+                    />
                   </div>
                   <div className="flex justify-end space-x-2">
-                    <Button variant="outline">{t('companyInterviews.form.cancel')}</Button>
-                    <Button>{t('companyInterviews.form.schedule')}</Button>
+                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>{t('companyInterviews.form.cancel')}</Button>
+                    <Button onClick={handleAddInterview} className="bg-gradient-to-r from-blue-600 to-purple-600">{t('companyInterviews.form.schedule')}</Button>
                   </div>
                 </div>
               </DialogContent>
@@ -440,19 +692,66 @@ export default function CompanyInterviews() {
                         
                         <div className="flex flex-col space-y-2">
                           {interview.meetingLink && (
-                            <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600">
+                            <Button 
+                              size="sm" 
+                              className="bg-gradient-to-r from-blue-500 to-purple-600"
+                              onClick={() => handleJoinMeeting(interview)}
+                            >
                               <Video className="h-4 w-4 mr-1" />
-                              {t('companyInterviews.actions.joinMeeting')}
+                              {t('companyInterviews.actions.joinMeeting') || '회의 참여'}
                             </Button>
                           )}
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEditInterview(interview)}
+                          >
                             <Edit className="h-4 w-4 mr-1" />
-                            {t('companyInterviews.actions.edit')}
+                            {t('companyInterviews.actions.edit') || '수정'}
                           </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                            <XCircle className="h-4 w-4 mr-1" />
-                            {t('companyInterviews.actions.cancel')}
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleReschedule(interview)}
+                          >
+                            <RotateCcw className="h-4 w-4 mr-1" />
+                            {t('companyInterviews.actions.reschedule') || '일정 변경'}
                           </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleSendReminder(interview)}
+                          >
+                            <Bell className="h-4 w-4 mr-1" />
+                            {t('companyInterviews.actions.sendReminder') || '알림 전송'}
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleAddFeedback(interview)}>
+                                <Star className="h-4 w-4 mr-2" />
+                                {t('companyInterviews.actions.addFeedback') || '피드백 추가'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleCancelInterview(interview)}
+                                className="text-red-600"
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                {t('companyInterviews.actions.cancel') || '취소'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteInterview(interview)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {t('companyInterviews.actions.delete') || '삭제'}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </CardContent>
@@ -541,10 +840,38 @@ export default function CompanyInterviews() {
                         </div>
                         
                         <div className="flex flex-col space-y-2">
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4 mr-1" />
-                            {t('companyInterviews.actions.viewDetails')}
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewDetails(interview)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            {t('companyInterviews.actions.viewDetails') || '상세 보기'}
                           </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleAddFeedback(interview)}
+                          >
+                            <Star className="h-4 w-4 mr-1" />
+                            {t('companyInterviews.actions.editFeedback') || '피드백 수정'}
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteInterview(interview)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {t('companyInterviews.actions.delete') || '삭제'}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </CardContent>
@@ -595,10 +922,73 @@ export default function CompanyInterviews() {
                       </div>
                       
                       <div className="flex flex-col space-y-2">
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4 mr-1" />
-                          {t('companyInterviews.actions.edit')}
+                        {interview.status === "scheduled" && interview.meetingLink && (
+                          <Button 
+                            size="sm" 
+                            className="bg-gradient-to-r from-blue-500 to-purple-600"
+                            onClick={() => handleJoinMeeting(interview)}
+                          >
+                            <Video className="h-4 w-4 mr-1" />
+                            {t('companyInterviews.actions.joinMeeting') || '회의 참여'}
+                          </Button>
+                        )}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewDetails(interview)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          {t('companyInterviews.actions.viewDetails') || '상세 보기'}
                         </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditInterview(interview)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          {t('companyInterviews.actions.edit') || '수정'}
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {interview.status === "scheduled" && (
+                              <>
+                                <DropdownMenuItem onClick={() => handleReschedule(interview)}>
+                                  <RotateCcw className="h-4 w-4 mr-2" />
+                                  {t('companyInterviews.actions.reschedule') || '일정 변경'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleSendReminder(interview)}>
+                                  <Bell className="h-4 w-4 mr-2" />
+                                  {t('companyInterviews.actions.sendReminder') || '알림 전송'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleCancelInterview(interview)}
+                                  className="text-red-600"
+                                >
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  {t('companyInterviews.actions.cancel') || '취소'}
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {interview.status === "completed" && (
+                              <DropdownMenuItem onClick={() => handleAddFeedback(interview)}>
+                                <Star className="h-4 w-4 mr-2" />
+                                {t('companyInterviews.actions.editFeedback') || '피드백 수정'}
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteInterview(interview)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              {t('companyInterviews.actions.delete') || '삭제'}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   </CardContent>
@@ -607,6 +997,304 @@ export default function CompanyInterviews() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Edit Interview Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{t('companyInterviews.editDialog.title') || '면접 정보 수정'}</DialogTitle>
+              <DialogDescription>
+                {selectedInterview && `${selectedInterview.candidate.name}님의 면접 정보를 수정합니다.`}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>{t('companyInterviews.form.date')}</Label>
+                  <Input 
+                    type="date" 
+                    defaultValue={selectedInterview?.scheduledAt?.split('T')[0]}
+                  />
+                </div>
+                <div>
+                  <Label>{t('companyInterviews.form.time')}</Label>
+                  <Input 
+                    type="time" 
+                    defaultValue={selectedInterview?.scheduledAt?.split('T')[1]?.slice(0, 5)}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>{t('companyInterviews.form.duration')}</Label>
+                  <Select defaultValue={selectedInterview?.duration?.toString()}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="30">30 {t('companyInterviews.minutes')}</SelectItem>
+                      <SelectItem value="60">60 {t('companyInterviews.minutes')}</SelectItem>
+                      <SelectItem value="90">90 {t('companyInterviews.minutes')}</SelectItem>
+                      <SelectItem value="120">120 {t('companyInterviews.minutes')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>{t('companyInterviews.form.type')}</Label>
+                  <Select defaultValue={selectedInterview?.type === "화상면접" ? "video" : selectedInterview?.type === "대면면접" ? "inPerson" : "phone"}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="video">{t('companyInterviews.types.video')}</SelectItem>
+                      <SelectItem value="inPerson">{t('companyInterviews.types.inPerson')}</SelectItem>
+                      <SelectItem value="phone">{t('companyInterviews.types.phone')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label>{t('companyInterviews.form.location')}</Label>
+                <Input defaultValue={selectedInterview?.location} />
+              </div>
+              <div>
+                <Label>{t('companyInterviews.form.notes')}</Label>
+                <Textarea defaultValue={selectedInterview?.notes} />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  {t('companyInterviews.form.cancel')}
+                </Button>
+                <Button onClick={handleSaveEdit} className="bg-gradient-to-r from-blue-600 to-purple-600">
+                  {t('common.save') || '저장'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Cancel Interview Dialog */}
+        <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t('companyInterviews.cancelDialog.title') || '면접 취소 확인'}</DialogTitle>
+              <DialogDescription>
+                {selectedInterview && `${selectedInterview.candidate.name}님의 면접을 취소하시겠습니까?`}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end space-x-2 mt-4">
+              <Button variant="outline" onClick={() => setIsCancelDialogOpen(false)}>
+                {t('companyInterviews.form.cancel')}
+              </Button>
+              <Button onClick={handleConfirmCancel} className="bg-red-600 hover:bg-red-700">
+                {t('companyInterviews.actions.confirmCancel') || '취소 확인'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Reschedule Interview Dialog */}
+        <Dialog open={isRescheduleDialogOpen} onOpenChange={setIsRescheduleDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{t('companyInterviews.rescheduleDialog.title') || '면접 일정 변경'}</DialogTitle>
+              <DialogDescription>
+                {selectedInterview && `${selectedInterview.candidate.name}님의 면접 일정을 변경합니다.`}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>{t('companyInterviews.form.date')}</Label>
+                  <Input type="date" />
+                </div>
+                <div>
+                  <Label>{t('companyInterviews.form.time')}</Label>
+                  <Input type="time" />
+                </div>
+              </div>
+              <div>
+                <Label>{t('companyInterviews.rescheduleDialog.reason') || '변경 사유'}</Label>
+                <Textarea placeholder={t('companyInterviews.rescheduleDialog.reasonPlaceholder') || '일정 변경 사유를 입력해주세요...'} />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsRescheduleDialogOpen(false)}>
+                  {t('companyInterviews.form.cancel')}
+                </Button>
+                <Button onClick={handleSaveReschedule} className="bg-gradient-to-r from-blue-600 to-purple-600">
+                  {t('companyInterviews.actions.reschedule') || '일정 변경'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Feedback Dialog */}
+        <Dialog open={isFeedbackDialogOpen} onOpenChange={setIsFeedbackDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{t('companyInterviews.feedbackDialog.title') || '면접 피드백'}</DialogTitle>
+              <DialogDescription>
+                {selectedInterview && `${selectedInterview.candidate.name}님의 면접 피드백을 작성합니다.`}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div>
+                <Label>{t('companyInterviews.feedbackDialog.rating') || '평점'}</Label>
+                <div className="flex items-center space-x-2 mt-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-8 w-8 cursor-pointer ${
+                        i < rating
+                          ? "text-yellow-400 fill-current"
+                          : "text-gray-300"
+                      }`}
+                      onClick={() => setRating(i + 1)}
+                    />
+                  ))}
+                  <span className="text-sm text-gray-600 ml-2">{rating}/5</span>
+                </div>
+              </div>
+              <div>
+                <Label>{t('companyInterviews.feedback')}</Label>
+                <Textarea
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder={t('companyInterviews.feedbackDialog.placeholder') || '면접 피드백을 입력해주세요...'}
+                  rows={6}
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsFeedbackDialogOpen(false)}>
+                  {t('companyInterviews.form.cancel')}
+                </Button>
+                <Button onClick={handleSaveFeedback} className="bg-gradient-to-r from-blue-600 to-purple-600">
+                  {t('common.save') || '저장'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* View Details Dialog */}
+        <Dialog open={isViewDetailsDialogOpen} onOpenChange={setIsViewDetailsDialogOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>{t('companyInterviews.detailsDialog.title') || '면접 상세 정보'}</DialogTitle>
+              <DialogDescription>
+                {selectedInterview && `${selectedInterview.candidate.name}님의 면접 상세 정보입니다.`}
+              </DialogDescription>
+            </DialogHeader>
+            {selectedInterview && (
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">{t('companyInterviews.form.candidate')}</Label>
+                    <p className="text-lg font-semibold">{selectedInterview.candidate.name}</p>
+                    <p className="text-sm text-gray-600">{selectedInterview.candidate.email}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">{t('companyInterviews.interviewer')}</Label>
+                    <p className="text-lg font-semibold">{selectedInterview.interviewer.name}</p>
+                    <p className="text-sm text-gray-600">{selectedInterview.interviewer.email}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">{t('companyInterviews.form.date')}</Label>
+                    <p>{formatDate(selectedInterview.scheduledAt, t)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">{t('companyInterviews.form.duration')}</Label>
+                    <p>{selectedInterview.duration} {t('companyInterviews.minutes')}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">{t('companyInterviews.form.type')}</Label>
+                    <p>{selectedInterview.type}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">{t('companyInterviews.form.location')}</Label>
+                    <p>{selectedInterview.location}</p>
+                  </div>
+                </div>
+                {selectedInterview.meetingLink && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">{t('companyInterviews.actions.joinMeeting')}</Label>
+                    <a 
+                      href={selectedInterview.meetingLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {selectedInterview.meetingLink}
+                    </a>
+                  </div>
+                )}
+                {selectedInterview.notes && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">{t('companyInterviews.notes')}</Label>
+                    <p className="text-sm">{selectedInterview.notes}</p>
+                  </div>
+                )}
+                {selectedInterview.feedback && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">{t('companyInterviews.feedback')}</Label>
+                    <p className="text-sm">{selectedInterview.feedback}</p>
+                  </div>
+                )}
+                {selectedInterview.rating && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">{t('companyInterviews.feedbackDialog.rating')}</Label>
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-5 w-5 ${
+                            i < selectedInterview.rating
+                              ? "text-yellow-400 fill-current"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                      <span className="text-sm text-gray-600 ml-2">{selectedInterview.rating}/5</span>
+                    </div>
+                  </div>
+                )}
+                <div className="flex justify-end mt-4">
+                  <Button variant="outline" onClick={() => setIsViewDetailsDialogOpen(false)}>
+                    {t('common.close') || '닫기'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Interview Message Template Dialog */}
+        <MessageTemplateDialog
+          open={isInterviewMessageDialogOpen}
+          onOpenChange={setIsInterviewMessageDialogOpen}
+          type="interview"
+          candidateName={selectedInterviewForMessage?.candidate?.name}
+          candidateEmail={selectedInterviewForMessage?.candidate?.email}
+          jobTitle={selectedInterviewForMessage?.candidate?.position}
+          interviewDate={selectedInterviewForMessage?.scheduledAt ? new Date(selectedInterviewForMessage.scheduledAt).toLocaleDateString('ko-KR') : ""}
+          interviewTime={selectedInterviewForMessage?.scheduledAt ? new Date(selectedInterviewForMessage.scheduledAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : ""}
+          interviewLocation={selectedInterviewForMessage?.location || selectedInterviewForMessage?.meetingLink || ""}
+          onSend={(message) => {
+            if (selectedInterviewForMessage) {
+              sendInterviewMessageMutation.mutate({
+                interviewId: selectedInterviewForMessage.id,
+                sendEmail: message.autoSend,
+                emailSubject: message.subject,
+                emailBody: message.body,
+              });
+            }
+          }}
+        />
       </div>
     </CompanyLayout>
   );

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { 
@@ -16,7 +17,8 @@ import {
   User,
   MapPin,
   Mail,
-  Phone
+  Phone,
+  ArrowLeft
 } from "lucide-react";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -101,6 +103,7 @@ export default function ResumesPage() {
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -274,6 +277,18 @@ export default function ResumesPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back Button */}
+        <div className="mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLocation("/user/home")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            뒤로가기
+          </Button>
+        </div>
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
